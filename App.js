@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { StatusBar } from "expo-status-bar";
 import {
   ImageBackground,
   StyleSheet,
@@ -8,13 +7,16 @@ import {
   View,
   Alert,
   TouchableOpacity,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useFonts } from "expo-font";
+import Icon from "@expo/vector-icons/Feather";
 
 export default function App() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [fontsLoaded] = useFonts({
     "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
     "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
@@ -28,6 +30,7 @@ export default function App() {
   if (!fontsLoaded) {
     return null;
   }
+  console.log(isShowKeyboard);
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -35,37 +38,62 @@ export default function App() {
         resizeMode="cover"
         style={styles.image}
       >
-        <View style={styles.regFormWrapper}>
-          <Text style={styles.regFormTitle}>Реєстрація</Text>
-          <View style={styles.regFormInputWrapper}>
-            <TextInput
-              style={styles.regFormInput}
-              placeholder="Логін"
-              value={name}
-              onChangeText={setName}
-            />
+        <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+        >
+          <View
+            style={{
+              ...styles.regFormWrapper,
+              paddingBottom: isShowKeyboard ? 50 : 200,
+            }}
+          >
+            <View style={styles.addAvatar}>
+              {/* <Image
+              source={require("./assets/icon.png")}
+              style={styles.avatar}
+            /> */}
+              <View style={styles.addAvatarBtn}>
+                <Icon name="plus" size={18} color="#FF6C00" />
+              </View>
+            </View>
+            <Text style={styles.regFormTitle}>Реєстрація</Text>
+            <View style={styles.regFormInputWrapper}>
+              <TextInput
+                style={styles.regFormInput}
+                placeholder="Логін"
+                value={name}
+                onChangeText={setName}
+                onFocus={() => {
+                  setIsShowKeyboard(true);
+                }}
+              />
 
-            <TextInput
-              style={styles.regFormInput}
-              placeholder="Адреса електронної пошти"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <TextInput
-              style={styles.regFormInput}
-              placeholder="Пароль"
-              value={password}
-              onChangeText={setPassword}
-            />
+              <TextInput
+                style={styles.regFormInput}
+                placeholder="Адреса електронної пошти"
+                value={email}
+                onChangeText={setEmail}
+                onFocus={() => {
+                  setIsShowKeyboard(true);
+                }}
+              />
+              <TextInput
+                style={styles.regFormInput}
+                placeholder="Пароль"
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => {
+                  setIsShowKeyboard(true);
+                }}
+              />
+              <Text style={styles.regShowPasswordBtn}>Показати</Text>
+            </View>
+            <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
+              <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
+            </TouchableOpacity>
+            <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
           </View>
-          <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
-            <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
-          </TouchableOpacity>
-          <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
-        </View>
-
-        <StatusBar style="auto" />
-        {/* <Text style={styles.text}>Inside</Text> */}
+        </KeyboardAvoidingView>
       </ImageBackground>
     </View>
   );
@@ -74,23 +102,46 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // alignItems: "center",
-    // justifyContent: "center",
+    justifyContent: "center",
   },
   regFormWrapper: {
+    position: "relative",
+    width: "100%",
     backgroundColor: "#FFF",
     borderRadius: 25,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
-    width: "100%",
   },
   image: {
     flex: 1,
+    justifyContent: "flex-end",
+    // alignItems: "center",
+  },
+  addAvatar: {
+    position: "relative",
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginTop: -60,
+    marginBottom: 32,
+    width: 120,
+    height: 120,
+    backgroundColor: "#F6F6F6",
+    borderRadius: 16,
+  },
+  addAvatarBtn: {
+    position: "absolute",
+    bottom: 14,
+    right: -12,
+    width: 25,
+    height: 25,
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: "#FF6C00",
+    backgroundColor: "#FFF",
   },
   regFormTitle: {
-    paddingTop: 92,
     textAlign: "center",
     fontFamily: "Roboto-Medium",
     fontSize: 30,
@@ -109,6 +160,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     columnGap: 16,
   },
+  regShowPasswordBtn: {
+    position: "absolute",
+    bottom: 32,
+    right: 32,
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    lineHeight: 19,
+    color: "#1B4371",
+  },
   regBtn: {
     height: 50,
     justifyContent: "center",
@@ -121,11 +181,12 @@ const styles = StyleSheet.create({
   },
   regBtnTitle: {
     fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    lineHeight: 19,
     color: "#FFF",
   },
   regIsLogin: {
     marginTop: 16,
-    paddingBottom: 45,
     textAlign: "center",
     fontSize: 16,
     color: "#1B4371",
