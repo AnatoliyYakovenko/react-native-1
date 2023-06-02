@@ -1,11 +1,30 @@
+import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ImageBackground, StyleSheet, Text, View } from "react-native";
+import {
+  ImageBackground,
+  StyleSheet,
+  TextInput,
+  Text,
+  View,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { useFonts } from "expo-font";
 
 export default function App() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [fontsLoaded] = useFonts({
-    "Inter-Black": require("./assets/fonts/Roboto-Bold.ttf"),
+    "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
+    "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
+    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
   });
+
+  const onLogin = () => {
+    Alert.alert("Credentials", `${name} +${email} + ${password}`);
+  };
+
   if (!fontsLoaded) {
     return null;
   }
@@ -16,8 +35,33 @@ export default function App() {
         resizeMode="cover"
         style={styles.image}
       >
-        <View style={styles.formWrapper}>
-          <Text style={styles.formTitle}>Hello Native</Text>
+        <View style={styles.regFormWrapper}>
+          <Text style={styles.regFormTitle}>Реєстрація</Text>
+          <View style={styles.regFormInputWrapper}>
+            <TextInput
+              style={styles.regFormInput}
+              placeholder="Логін"
+              value={name}
+              onChangeText={setName}
+            />
+
+            <TextInput
+              style={styles.regFormInput}
+              placeholder="Адреса електронної пошти"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={styles.regFormInput}
+              placeholder="Пароль"
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+          <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
+            <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
+          </TouchableOpacity>
+          <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
         </View>
 
         <StatusBar style="auto" />
@@ -33,7 +77,7 @@ const styles = StyleSheet.create({
     // alignItems: "center",
     // justifyContent: "center",
   },
-  formWrapper: {
+  regFormWrapper: {
     backgroundColor: "#FFF",
     borderRadius: 25,
     borderBottomLeftRadius: 0,
@@ -45,9 +89,45 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  formTitle: {
+  regFormTitle: {
     paddingTop: 92,
     textAlign: "center",
+    fontFamily: "Roboto-Medium",
     fontSize: 30,
+  },
+  regFormInputWrapper: {
+    gap: 16,
+    marginTop: 32,
+  },
+  regFormInput: {
+    height: 50,
+    marginHorizontal: 16,
+    paddingStart: 16,
+    backgroundColor: "#F6F6F6",
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    borderRadius: 8,
+    columnGap: 16,
+  },
+  regBtn: {
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 43,
+    marginHorizontal: 16,
+    backgroundColor: "#FF6C00",
+    borderRadius: 100,
+    borderColor: "black",
+  },
+  regBtnTitle: {
+    fontFamily: "Roboto-Regular",
+    color: "#FFF",
+  },
+  regIsLogin: {
+    marginTop: 16,
+    paddingBottom: 45,
+    textAlign: "center",
+    fontSize: 16,
+    color: "#1B4371",
   },
 });
