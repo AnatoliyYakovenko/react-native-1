@@ -54,7 +54,7 @@ export default function App() {
             <View
               style={{
                 ...styles.loginFormWrapper,
-                marginBottom: isShowKeyboard ? -153 : 0,
+                marginBottom: isShowKeyboard ? -217 : 0,
               }}
             >
               <Text style={styles.loginFormTitle}>Увійти</Text>
@@ -103,7 +103,7 @@ export default function App() {
                 <Text style={styles.loginBtnTitle}>Увійти</Text>
               </TouchableOpacity>
               <Text style={styles.loginHasAccount}>
-                Немає акаунту?
+                Немає акаунту?{" "}
                 <Text style={styles.loginReg}>Зареєструватись</Text>
               </Text>
             </View>
@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
   loginFormWrapper: {
     position: "relative",
     width: "100%",
+    paddingTop: 32,
     paddingBottom: 111,
     backgroundColor: "#FFF",
     borderRadius: 25,
@@ -131,31 +132,6 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     justifyContent: "flex-end",
-    // alignItems: "center",
-  },
-  addAvatar: {
-    position: "relative",
-    marginLeft: "auto",
-    marginRight: "auto",
-    marginTop: -60,
-    marginBottom: 32,
-    width: 120,
-    height: 120,
-    backgroundColor: "#F6F6F6",
-    borderRadius: 16,
-  },
-  addAvatarBtn: {
-    position: "absolute",
-    bottom: 14,
-    right: -12,
-    width: 25,
-    height: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: "#FF6C00",
-    backgroundColor: "#FFF",
   },
   loginFormTitle: {
     textAlign: "center",
@@ -210,4 +186,3 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 });
-
