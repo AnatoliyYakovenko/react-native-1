@@ -8,6 +8,8 @@ import {
   Alert,
   TouchableOpacity,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useFonts } from "expo-font";
 import Icon from "@expo/vector-icons/Feather";
@@ -16,6 +18,7 @@ export default function App() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [focused, setFocused] = useState("");
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [fontsLoaded] = useFonts({
     "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
@@ -30,72 +33,99 @@ export default function App() {
   if (!fontsLoaded) {
     return null;
   }
+  const handleKeyboard = () => {
+    Keyboard.dismiss();
+    setIsShowKeyboard(false);
+  };
+
   console.log(isShowKeyboard);
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={require("./assets/bg.png")}
-        resizeMode="cover"
-        style={styles.image}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS == "ios" ? "padding" : "height"}
+    <TouchableWithoutFeedback onPress={handleKeyboard}>
+      <View style={styles.container}>
+        <ImageBackground
+          source={require("./assets/bg.png")}
+          resizeMode="cover"
+          style={styles.image}
         >
-          <View
-            style={{
-              ...styles.regFormWrapper,
-              paddingBottom: isShowKeyboard ? 50 : 200,
-            }}
+          <KeyboardAvoidingView
+            behavior={Platform.OS == "ios" ? "padding" : "height"}
           >
-            <View style={styles.addAvatar}>
-              {/* <Image
+            <View
+              style={{
+                ...styles.regFormWrapper,
+                marginBottom: isShowKeyboard ? -153 : 0,
+              }}
+            >
+              <View style={styles.addAvatar}>
+                {/* <Image
               source={require("./assets/icon.png")}
               style={styles.avatar}
             /> */}
-              <View style={styles.addAvatarBtn}>
-                <Icon name="plus" size={18} color="#FF6C00" />
+                <View style={styles.addAvatarBtn}>
+                  <Icon name="plus" size={18} color="#FF6C00" />
+                </View>
               </View>
+              <Text style={styles.regFormTitle}>Реєстрація</Text>
+              <View style={styles.regFormInputWrapper}>
+                <TextInput
+                  placeholder="Логін"
+                  value={name}
+                  onChangeText={setName}
+                  onFocus={() => {
+                    setIsShowKeyboard(true);
+                    setFocused("login");
+                  }}
+                  onBlur={() => {
+                    setFocused("");
+                  }}
+                  style={{
+                    ...styles.regFormInput,
+                    borderColor: focused === "login" ? "#FF6C00" : "#E8E8E8",
+                  }}
+                />
+                <TextInput
+                  placeholder="Адреса електронної пошти"
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() => {
+                    setIsShowKeyboard(true);
+                    setFocused("email");
+                  }}
+                  onBlur={() => {
+                    setFocused("");
+                  }}
+                  style={{
+                    ...styles.regFormInput,
+                    borderColor: focused === "email" ? "#FF6C00" : "#E8E8E8",
+                  }}
+                />
+                <TextInput
+                  placeholder="Пароль"
+                  value={password}
+                  onChangeText={setPassword}
+                  onFocus={() => {
+                    setIsShowKeyboard(true);
+                    setFocused("password");
+                  }}
+                  onBlur={() => {
+                    setFocused("");
+                  }}
+                  style={{
+                    ...styles.regFormInput,
+                    borderColor: focused === "password" ? "#FF6C00" : "#E8E8E8",
+                  }}
+                />
+                <Text style={styles.regShowPasswordBtn}>Показати</Text>
+              </View>
+              <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
+                <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
+              </TouchableOpacity>
+              <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
             </View>
-            <Text style={styles.regFormTitle}>Реєстрація</Text>
-            <View style={styles.regFormInputWrapper}>
-              <TextInput
-                style={styles.regFormInput}
-                placeholder="Логін"
-                value={name}
-                onChangeText={setName}
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                }}
-              />
-
-              <TextInput
-                style={styles.regFormInput}
-                placeholder="Адреса електронної пошти"
-                value={email}
-                onChangeText={setEmail}
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                }}
-              />
-              <TextInput
-                style={styles.regFormInput}
-                placeholder="Пароль"
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                }}
-              />
-              <Text style={styles.regShowPasswordBtn}>Показати</Text>
-            </View>
-            <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
-              <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
-            </TouchableOpacity>
-            <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
-          </View>
-        </KeyboardAvoidingView>
-      </ImageBackground>
-    </View>
+          </KeyboardAvoidingView>
+        </ImageBackground>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -107,6 +137,7 @@ const styles = StyleSheet.create({
   regFormWrapper: {
     position: "relative",
     width: "100%",
+    paddingBottom: 45,
     backgroundColor: "#FFF",
     borderRadius: 25,
     borderBottomLeftRadius: 0,
@@ -156,7 +187,6 @@ const styles = StyleSheet.create({
     paddingStart: 16,
     backgroundColor: "#F6F6F6",
     borderWidth: 1,
-    borderColor: "#E8E8E8",
     borderRadius: 8,
     columnGap: 16,
   },
