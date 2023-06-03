@@ -44,7 +44,7 @@ export default function App() {
           <View
             style={{
               ...styles.regFormWrapper,
-              paddingBottom: isShowKeyboard ? 50 : 200,
+              paddingBottom: isShowKeyboard ? 50 : 10,
             }}
           >
             <View style={styles.addAvatar}>
@@ -63,9 +63,9 @@ export default function App() {
                 placeholder="Логін"
                 value={name}
                 onChangeText={setName}
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                }}
+                // onFocus={() => {
+                //   setIsShowKeyboard(true);
+                // }}
               />
 
               <TextInput
@@ -73,9 +73,9 @@ export default function App() {
                 placeholder="Адреса електронної пошти"
                 value={email}
                 onChangeText={setEmail}
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                }}
+                // onFocus={() => {
+                //   setIsShowKeyboard(true);
+                // }}
               />
               <TextInput
                 style={styles.regFormInput}
