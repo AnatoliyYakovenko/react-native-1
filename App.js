@@ -20,6 +20,7 @@ export default function App() {
   const [password, setPassword] = useState("");
   const [focused, setFocused] = useState("");
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [fontsLoaded] = useFonts({
     "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
     "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
@@ -36,6 +37,9 @@ export default function App() {
   const handleKeyboard = () => {
     Keyboard.dismiss();
     setIsShowKeyboard(false);
+  };
+  const handleInputShow = () => {
+    setShowPassword(!showPassword);
   };
 
   console.log(isShowKeyboard);
@@ -114,8 +118,14 @@ export default function App() {
                     ...styles.regFormInput,
                     borderColor: focused === "password" ? "#FF6C00" : "#E8E8E8",
                   }}
+                  secureTextEntry={!showPassword}
                 />
-                <Text style={styles.regShowPasswordBtn}>Показати</Text>
+                <Text
+                  style={styles.regShowPasswordBtn}
+                  onPress={handleInputShow}
+                >
+                  Показати
+                </Text>
               </View>
               <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
                 <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
