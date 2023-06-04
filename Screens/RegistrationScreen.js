@@ -14,26 +14,22 @@ import {
 import { useFonts } from "expo-font";
 import Icon from "@expo/vector-icons/Feather";
 
-export default function App() {
+export default function RegistrationScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [focused, setFocused] = useState("");
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [fontsLoaded] = useFonts({
-    "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
-    "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
-    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
-  });
+
 
   const onLogin = () => {
-    Alert.alert("Credentials", `${name} +${email} + ${password}`);
+    console.log("Credentials", `${name} +${email} + ${password}`);
   };
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  //   if (!fontsLoaded) {
+  //     return null;
+  //   }
   const handleKeyboard = () => {
     Keyboard.dismiss();
     setIsShowKeyboard(false);
@@ -47,30 +43,30 @@ export default function App() {
     <TouchableWithoutFeedback onPress={handleKeyboard}>
       <View style={styles.container}>
         <ImageBackground
-          source={require("./assets/bg.png")}
+          source={require("../assets/bg.png")}
           resizeMode="cover"
           style={styles.image}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : "height"}
-          >
-            <View
-              style={{
-                ...styles.regFormWrapper,
-                marginBottom: isShowKeyboard ? -153 : 0,
-              }}
-            >
-              <View style={styles.addAvatar}>
-                {/* <Image
+          <View style={styles.regFormWrapper}>
+            <View style={styles.addAvatar}>
+              {/* <Image
               source={require("./assets/icon.png")}
               style={styles.avatar}
             /> */}
-                <View style={styles.addAvatarBtn}>
-                  <Icon name="plus" size={18} color="#FF6C00" />
-                </View>
+              <View style={styles.addAvatarBtn}>
+                <Icon name="plus" size={18} color="#FF6C00" />
               </View>
-              <Text style={styles.regFormTitle}>Реєстрація</Text>
-              <View style={styles.regFormInputWrapper}>
+            </View>
+            <Text style={styles.regFormTitle}>Реєстрація</Text>
+            <KeyboardAvoidingView
+              behavior={Platform.OS == "ios" ? "padding" : "height"}
+            >
+              <View
+                style={{
+                  ...styles.regFormInputWrapper,
+                  paddingBottom: isShowKeyboard ? 159 : 43,
+                }}
+              >
                 <TextInput
                   placeholder="Логін"
                   value={name}
@@ -80,6 +76,7 @@ export default function App() {
                     setFocused("login");
                   }}
                   onBlur={() => {
+                    setIsShowKeyboard(false);
                     setFocused("");
                   }}
                   style={{
@@ -96,6 +93,7 @@ export default function App() {
                     setFocused("email");
                   }}
                   onBlur={() => {
+                    setIsShowKeyboard(false);
                     setFocused("");
                   }}
                   style={{
@@ -112,11 +110,12 @@ export default function App() {
                     setFocused("password");
                   }}
                   onBlur={() => {
+                    setIsShowKeyboard(false);
                     setFocused("");
                   }}
                   style={{
                     ...styles.regFormInput,
-                    borderColor: focused === "password" ? "#FF6C00" : "#E8E8E8",
+                    borderColor: focused === "email" ? "#FF6C00" : "#E8E8E8",
                   }}
                   secureTextEntry={!showPassword}
                 />
@@ -124,15 +123,15 @@ export default function App() {
                   style={styles.regShowPasswordBtn}
                   onPress={handleInputShow}
                 >
-                  Показати
+                  {showPassword ? "Приховати" : "Показати"}
                 </Text>
               </View>
-              <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
-                <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
-              </TouchableOpacity>
-              <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
-            </View>
-          </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+            <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
+              <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
+            </TouchableOpacity>
+            <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
+          </View>
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
@@ -145,9 +144,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   regFormWrapper: {
-    position: "relative",
     width: "100%",
-    paddingBottom: 45,
+    paddingBottom: 78,
     backgroundColor: "#FFF",
     borderRadius: 25,
     borderBottomLeftRadius: 0,
@@ -188,6 +186,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   regFormInputWrapper: {
+    position: "relative",
     gap: 16,
     marginTop: 32,
   },
@@ -202,7 +201,7 @@ const styles = StyleSheet.create({
   },
   regShowPasswordBtn: {
     position: "absolute",
-    bottom: 32,
+    top: 148,
     right: 32,
     fontFamily: "Roboto-Regular",
     fontSize: 16,
@@ -213,7 +212,7 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 43,
+    // mrginTop: 43,a
     marginHorizontal: 16,
     backgroundColor: "#FF6C00",
     borderRadius: 100,

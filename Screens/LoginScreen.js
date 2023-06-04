@@ -5,33 +5,23 @@ import {
   TextInput,
   Text,
   View,
-  Alert,
   TouchableOpacity,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { useFonts } from "expo-font";
 
-export default function App() {
+export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [focused, setFocused] = useState("");
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [fontsLoaded] = useFonts({
-    "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
-    "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
-    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
-  });
 
   const onLogin = () => {
-    Alert.alert("Credentials", `${email} + ${password}`);
+    console.log("Credentials", `${email} + ${password}`);
   };
 
-  if (!fontsLoaded) {
-    return null;
-  }
   const handleKeyboard = () => {
     Keyboard.dismiss();
     setIsShowKeyboard(false);
@@ -44,21 +34,21 @@ export default function App() {
     <TouchableWithoutFeedback onPress={handleKeyboard}>
       <View style={styles.container}>
         <ImageBackground
-          source={require("./assets/bg.png")}
+          source={require("../assets/bg.png")}
           resizeMode="cover"
           style={styles.image}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : "height"}
-          >
-            <View
-              style={{
-                ...styles.loginFormWrapper,
-                marginBottom: isShowKeyboard ? -217 : 0,
-              }}
+          <View style={styles.loginFormWrapper}>
+            <Text style={styles.loginFormTitle}>Увійти</Text>
+            <KeyboardAvoidingView
+              behavior={Platform.OS == "ios" ? "padding" : "height"}
             >
-              <Text style={styles.loginFormTitle}>Увійти</Text>
-              <View style={styles.loginFormInputWrapper}>
+              <View
+                style={{
+                  ...styles.loginFormInputWrapper,
+                  paddingBottom: isShowKeyboard ? 95 : 43,
+                }}
+              >
                 <TextInput
                   placeholder="Адреса електронної пошти"
                   value={email}
@@ -69,6 +59,7 @@ export default function App() {
                   }}
                   onBlur={() => {
                     setFocused("");
+                    setIsShowKeyboard(false);
                   }}
                   style={{
                     ...styles.loginFormInput,
@@ -85,6 +76,7 @@ export default function App() {
                   }}
                   onBlur={() => {
                     setFocused("");
+                    setIsShowKeyboard(false);
                   }}
                   style={{
                     ...styles.loginFormInput,
@@ -96,18 +88,18 @@ export default function App() {
                   style={styles.loginShowPasswordBtn}
                   onPress={handleInputShow}
                 >
-                  Показати
+                  {showPassword ? "Приховати" : "Показати"}
                 </Text>
               </View>
-              <TouchableOpacity style={styles.loginBtn} onPress={onLogin}>
-                <Text style={styles.loginBtnTitle}>Увійти</Text>
-              </TouchableOpacity>
-              <Text style={styles.loginHasAccount}>
-                Немає акаунту?{" "}
-                <Text style={styles.loginReg}>Зареєструватись</Text>
-              </Text>
-            </View>
-          </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+            <TouchableOpacity style={styles.loginBtn} onPress={onLogin}>
+              <Text style={styles.loginBtnTitle}>Увійти</Text>
+            </TouchableOpacity>
+            <Text style={styles.loginHasAccount}>
+              Немає акаунту?{" "}
+              <Text style={styles.loginReg}>Зареєструватися</Text>
+            </Text>
+          </View>
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
@@ -123,7 +115,7 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     paddingTop: 32,
-    paddingBottom: 111,
+    paddingBottom: 144,
     backgroundColor: "#FFF",
     borderRadius: 25,
     borderBottomLeftRadius: 0,
@@ -153,7 +145,7 @@ const styles = StyleSheet.create({
   },
   loginShowPasswordBtn: {
     position: "absolute",
-    bottom: 32,
+    top: 82,
     right: 32,
     fontFamily: "Roboto-Regular",
     fontSize: 16,
@@ -164,7 +156,6 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 43,
     marginHorizontal: 16,
     backgroundColor: "#FF6C00",
     borderRadius: 100,
