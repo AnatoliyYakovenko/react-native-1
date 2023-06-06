@@ -1,4 +1,4 @@
-// import {} from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import LoginScreen from "./Screens/LoginScreen";
 import RegistrationScreen from "./Screens/RegistrationScreen";
@@ -14,6 +14,10 @@ export default function App() {
     return null;
   }
 
-  return <LoginScreen />;
-  // <RegistrationScreen />;
+  return (
+    <NavigationContainer>
+      <RegistrationScreen />
+      <LoginScreen />
+    </NavigationContainer>
+  );
 }
