@@ -1,8 +1,10 @@
 import "react-native-gesture-handler";
-import { NavigationContainer } from "@react-navigation/native";
 
 import { useFonts } from "expo-font";
-import useRoute from "./router";
+
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, View } from "react-native";
+import Home from "./Screens/Home";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -11,10 +13,20 @@ export default function App() {
     "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
   });
 
-  const routing = useRoute(true);
-
   if (!fontsLoaded) {
     return null;
   }
-  return <NavigationContainer>{routing}</NavigationContainer>;
+  return (
+    <View style={styles.container}>
+      <Home />
+      <StatusBar style="auto" />
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+});
