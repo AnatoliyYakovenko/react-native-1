@@ -13,7 +13,7 @@ import {
 export default function CreatePostsScreen() {
   return (
     <View style ={styles.container}>
-      <Text>CreatePostsScreen</Text>
+      
     </View>
   );
 }

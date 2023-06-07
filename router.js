@@ -55,6 +55,11 @@ export default function useRoute(isAuth) {
           tabBarIcon: ({ focused, size, color }) => (
             <SimpleLineIcons name="grid" size={24} color={color} />
           ),
+          headerRight: () => (
+            <Pressable style={{ paddingRight: 16 }}>
+              <Feather name="log-out" size={24} color="#BDBDBD" />
+            </Pressable>
+          ),
         }}
         name="Posts"
         component={PostsScreen}
