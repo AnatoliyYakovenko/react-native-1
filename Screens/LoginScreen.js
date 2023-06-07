@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
   ImageBackground,
   StyleSheet,
@@ -11,12 +12,15 @@ import {
   Keyboard,
 } from "react-native";
 
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [focused, setFocused] = useState("");
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const navigation = useNavigation();
 
   const onLogin = () => {
     console.log("Credentials", `${email} + ${password}`);
@@ -97,7 +101,12 @@ export default function LoginScreen() {
             </TouchableOpacity>
             <Text style={styles.loginHasAccount}>
               Немає акаунту?{" "}
-              <Text style={styles.loginReg}>Зареєструватися</Text>
+              <Text
+                style={styles.loginReg}
+                onPress={() => navigation.navigate("Registration")}
+              >
+                Зареєструватися
+              </Text>
             </Text>
           </View>
         </ImageBackground>

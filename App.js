@@ -1,7 +1,15 @@
+import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
 import { useFonts } from "expo-font";
 import LoginScreen from "./Screens/LoginScreen";
 import RegistrationScreen from "./Screens/RegistrationScreen";
+
+const AuthStack = createStackNavigator();
+const MainTab = createBottomTabNavigator();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -16,8 +24,18 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <RegistrationScreen />
-      <LoginScreen />
+      <AuthStack.Navigator initialRouteName="Login">
+        <AuthStack.Screen
+          options={{ headerShown: false }}
+          name="Login"
+          component={LoginScreen}
+        />
+        <AuthStack.Screen
+          options={{ headerShown: false }}
+          name="Registration"
+          component={RegistrationScreen}
+        />
+      </AuthStack.Navigator>
     </NavigationContainer>
   );
 }

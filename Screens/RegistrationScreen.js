@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
   ImageBackground,
   StyleSheet,
@@ -11,7 +12,6 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { useFonts } from "expo-font";
 import Icon from "@expo/vector-icons/Feather";
 
 export default function RegistrationScreen() {
@@ -22,14 +22,12 @@ export default function RegistrationScreen() {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const navigation = useNavigation();
 
   const onLogin = () => {
     console.log("Credentials", `${name} +${email} + ${password}`);
   };
 
-  //   if (!fontsLoaded) {
-  //     return null;
-  //   }
   const handleKeyboard = () => {
     Keyboard.dismiss();
     setIsShowKeyboard(false);
@@ -38,7 +36,6 @@ export default function RegistrationScreen() {
     setShowPassword(!showPassword);
   };
 
-  console.log(isShowKeyboard);
   return (
     <TouchableWithoutFeedback onPress={handleKeyboard}>
       <View style={styles.container}>
@@ -130,7 +127,15 @@ export default function RegistrationScreen() {
             <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
               <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
             </TouchableOpacity>
-            <Text style={styles.regIsLogin}>Вже є акаунт? Увійти</Text>
+            <Text style={styles.regIsLogin}>
+              Вже є акаунт?{" "}
+              <Text
+                style={styles.loginReg}
+                onPress={() => navigation.navigate("Login")}
+              >
+                Увійти
+              </Text>
+            </Text>
           </View>
         </ImageBackground>
       </View>
