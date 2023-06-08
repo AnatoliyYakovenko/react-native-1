@@ -1,31 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AntDesign } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 import {
   //   ImageBackground,
   StyleSheet,
-  //   TextInput,
+  TextInput,
   Text,
   View,
   Pressable,
-  //   TouchableOpacity,
+  TouchableOpacity,
   //   KeyboardAvoidingView,
   //   TouchableWithoutFeedback,
   //   Keyboard,
 } from "react-native";
 import { Camera } from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
 
-export default function CreatePostsScreen() {
+export default function CreatePostsScreen({ navigation }) {
   const [camera, setCamera] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
-  // const [hasPermission, setHasPermission] = useState(null);
-  // const [type, setType] = useState(Camera.Constants.Type.back);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [type, setType] = useState(Camera.Constants.Type.back);
+  const [title, setTitle] = useState("");
+  const [location, setLocation] = useState(null);
 
   // const takePhoto = async () => {
   //   const { uri } = await camera.takePictureAsync();
   //   await MediaLibrary.createAssetAsync(uri);
   //   setPhoto(uri);
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      await MediaLibrary.requestPermissionsAsync();
+
+      setHasPermission(status === "granted");
+    })();
+  }, []);
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
+
   const takePhoto = async () => {
     if (!isCameraReady) {
       console.log("Камера еще не готова. Подождите, пока она загрузится.");
@@ -34,11 +53,39 @@ export default function CreatePostsScreen() {
     const photo = await camera.takePictureAsync();
     setPhoto(photo.uri);
   };
+
+  const resetForm = () => {
+    setPhoto(null);
+    setTitle("");
+    setLocation(null);
+  };
+
+  const sendPhoto = () => {
+    navigation.navigate("Posts", { photo, title, location });
+    resetForm();
+  };
+
+  //   const onSubmit = async () => {
+  //     if (photo === null && location === '') {
+  //         Toast.show({
+  //             type: 'error',
+  //             text1: 'There are must be photo and title',
+  //         });
+  //         return;
+  //     }
+  //         await uploadPost();
+  //         navigation.navigate('PostsScreen');
+  //         resetPhotoState();
+  //         setTitle('');
+  //         setLocation('');
+  // };
+
   return (
     <View style={styles.container}>
       <Camera
         style={styles.camera}
         ref={setCamera}
+        type={type}
         onCameraReady={() => setIsCameraReady(true)}
       >
         {photo && (
@@ -56,6 +103,35 @@ export default function CreatePostsScreen() {
           {!photo ? "Завантажте фото" : "Редагувати фото"}
         </Text>
       </Pressable>
+      <TextInput
+        value={title}
+        onChangeText={(text) => setTitle(text)}
+        placeholder="Назва..."
+        placeholderTextColor={"#BDBDBD"}
+        style={styles.postTitle}
+      />
+      <View style={styles.inputContainer}>
+        <AntDesign name="enviromento" size={24} color="#BDBDBD" />
+        <TextInput
+          value={location}
+          onChangeText={(text) => setLocation(text)}
+          placeholder="Месцевість..."
+          placeholderTextColor={"#BDBDBD"}
+          style={styles.postLocation}
+        />
+      </View>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={styles.publishBtn}
+        // onPress={onSubmit}
+      >
+        <Text style={styles.publishBtnTitle} onPress={sendPhoto}>
+          Опубліковати
+        </Text>
+      </TouchableOpacity>
+      <Pressable style={styles.deleteBtn}>
+        <Feather name="trash-2" size={24} color="#BDBDBD" />
+      </Pressable>
     </View>
   );
 }
@@ -64,13 +140,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
+    paddingHorizontal: 16,
   },
   camera: {
     alignItems: "center",
     justifyContent: "center",
     height: 240,
     marginTop: 32,
-    marginHorizontal: 16,
     backgroundColor: "#F6F6F6",
     borderWidth: 1,
     borderColor: "#E8E8E8",
@@ -89,5 +165,53 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     paddingTop: 6,
+  },
+  postTitle: {
+    marginTop: 32,
+    paddingVertical: 16,
+    paddingHorizontal: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E8E8E8",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    color: "#000",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E8E8E8",
+  },
+  postLocation: {
+    paddingHorizontal: 0,
+    marginLeft: 4,
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    color: "#000",
+  },
+  publishBtn: {
+    backgroundColor: "#FF6C00",
+    borderRadius: 100,
+    marginTop: 32,
+    padding: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  publishBtnTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "Roboto-Regular",
+  },
+  deleteBtn: {
+    backgroundColor: "#F6F6F6",
+    width: 70,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 120,
   },
 });

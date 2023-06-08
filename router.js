@@ -1,4 +1,5 @@
 import { createStackNavigator } from "@react-navigation/stack";
+import { useNavigation } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
@@ -15,6 +16,7 @@ const AuthStack = createStackNavigator();
 const MainTab = createBottomTabNavigator();
 
 export default function useRoute(isAuth) {
+  const navigation = useNavigation();
   if (!isAuth) {
     return (
       <AuthStack.Navigator initialRouteName="Login">
@@ -33,12 +35,18 @@ export default function useRoute(isAuth) {
   }
   return (
     <MainTab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         tabBarActiveTintColor: "#FFFFFF",
         tabBarShowLabel: false,
         tabBarActiveBackgroundColor: "#FF6C00",
         tabBarItemStyle: { borderRadius: 20, width: 70, height: 40 },
         tabBarStyle: {
+          display:
+            route.name === "Create" ||
+            route.name === "Comment" ||
+            route.name === "Map"
+              ? "none"
+              : "flex",
           paddingTop: 9,
           justifyContent: "center",
           paddingLeft: 82,
@@ -46,7 +54,8 @@ export default function useRoute(isAuth) {
           paddingBottom: 47,
         },
         tabBarIconStyle: { color: "#212121" },
-      }}
+      })}
+      // }}
     >
       <MainTab.Screen
         options={{
@@ -79,7 +88,10 @@ export default function useRoute(isAuth) {
           },
           headerTitleAlign: "center",
           headerLeft: ({ focused, size, color }) => (
-            <Pressable style={{ paddingLeft: 15 }}>
+            <Pressable
+              style={{ paddingLeft: 15 }}
+              onPress={() => navigation.navigate("Posts")}
+            >
               <AntDesign name="arrowleft" size={24} color="#212121" />
             </Pressable>
           ),

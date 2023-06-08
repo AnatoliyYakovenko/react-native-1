@@ -10,12 +10,9 @@ import {
   //   Keyboard,
 } from "react-native";
 
-export default function PostsScreen() {
-  return (
-    <View style={styles.container}>
-  
-    </View>
-  );
+export default function PostsScreen({ route }) {
+  console.log("route.params", route.params);
+  return <View style={styles.container}></View>;
 }
 
 const styles = StyleSheet.create({

@@ -1,4 +1,5 @@
 import "react-native-gesture-handler";
+import { NavigationContainer } from "@react-navigation/native";
 
 import { useFonts } from "expo-font";
 
@@ -18,8 +19,10 @@ export default function App() {
   }
   return (
     <View style={styles.container}>
-      <Home />
-      <StatusBar style="auto" />
+      <NavigationContainer>
+        <Home />
+        <StatusBar style="auto" />
+      </NavigationContainer>
     </View>
   );
 }
