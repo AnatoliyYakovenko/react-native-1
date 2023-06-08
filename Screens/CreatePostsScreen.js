@@ -17,15 +17,36 @@ import { Camera } from "expo-camera";
 
 export default function CreatePostsScreen() {
   const [camera, setCamera] = useState(null);
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  // const [hasPermission, setHasPermission] = useState(null);
+  // const [type, setType] = useState(Camera.Constants.Type.back);
 
+  // const takePhoto = async () => {
+  //   const { uri } = await camera.takePictureAsync();
+  //   await MediaLibrary.createAssetAsync(uri);
+  //   setPhoto(uri);
   const takePhoto = async () => {
+    if (!isCameraReady) {
+      console.log("Камера еще не готова. Подождите, пока она загрузится.");
+      return;
+    }
     const photo = await camera.takePictureAsync();
     setPhoto(photo.uri);
   };
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} ref={setCamera}>
+      <Camera
+        style={styles.camera}
+        ref={setCamera}
+        onCameraReady={() => setIsCameraReady(true)}
+      >
+        {photo && (
+          <Image
+            source={{ uri: photo }}
+            style={{ height: 220, width: 220, marginTop: -80 }}
+          />
+        )}
         <Pressable style={styles.cameraBtn} onPress={takePhoto}>
           <AntDesign name="camera" size={24} color="#BDBDBD" />
         </Pressable>
