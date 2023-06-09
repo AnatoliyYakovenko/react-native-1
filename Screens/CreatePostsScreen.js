@@ -78,6 +78,7 @@ export default function CreatePostsScreen({ navigation }) {
       });
       return;
     }
+    const photo = await camera.takePictureAsync();
     setPhoto(photo.uri);
   };
   const resetPhotoState = () => {
