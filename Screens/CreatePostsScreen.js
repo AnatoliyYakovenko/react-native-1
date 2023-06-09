@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
+import * as Location from "expo-location";
 
 export default function CreatePostsScreen({ navigation }) {
   const [camera, setCamera] = useState(null);
@@ -30,6 +31,7 @@ export default function CreatePostsScreen({ navigation }) {
   //   const { uri } = await camera.takePictureAsync();
   //   await MediaLibrary.createAssetAsync(uri);
   //   setPhoto(uri);
+
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -44,6 +46,21 @@ export default function CreatePostsScreen({ navigation }) {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
+  // useEffect(() => {
+  //   (async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       console.log("Permission to access location was denied");
+  //     }
+
+  //     let location = await Location.getCurrentPositionAsync({});
+  //     const coords = {
+  //       latitude: location.coords.latitude,
+  //       longitude: location.coords.longitude,
+  //     };
+  //     setLocation(coords);
+  //   })();
+  // }, []);
 
   const takePhoto = async () => {
     if (!isCameraReady) {
@@ -60,7 +77,7 @@ export default function CreatePostsScreen({ navigation }) {
     setLocation(null);
   };
 
-  const sendPhoto = () => {
+  const sendPost = () => {
     navigation.navigate("Posts", { photo, title, location });
     resetForm();
   };
@@ -79,6 +96,8 @@ export default function CreatePostsScreen({ navigation }) {
   //         setTitle('');
   //         setLocation('');
   // };
+
+  console.log(location);
 
   return (
     <View style={styles.container}>
@@ -125,7 +144,7 @@ export default function CreatePostsScreen({ navigation }) {
         style={styles.publishBtn}
         // onPress={onSubmit}
       >
-        <Text style={styles.publishBtnTitle} onPress={sendPhoto}>
+        <Text style={styles.publishBtnTitle} onPress={sendPost}>
           Опубліковати
         </Text>
       </TouchableOpacity>

@@ -11,6 +11,8 @@ import RegistrationScreen from "./Screens/RegistrationScreen";
 import PostsScreen from "./Screens/PostsScreen";
 import ProfileScreen from "./Screens/ProfileScreen";
 import CreatePostsScreen from "./Screens/CreatePostsScreen";
+import CommentsScreen from "./Screens/CommentsScreen";
+import MapScreen from "./Screens/MapScreen";
 
 const AuthStack = createStackNavigator();
 const MainTab = createBottomTabNavigator();
@@ -39,7 +41,10 @@ export default function useRoute(isAuth) {
         tabBarActiveTintColor: "#FFFFFF",
         tabBarShowLabel: false,
         tabBarActiveBackgroundColor: "#FF6C00",
-        tabBarItemStyle: { borderRadius: 20, width: 70, height: 40 },
+        tabBarItemStyle:
+          route.name === "Comment" || route.name === "Map"
+            ? { display: "none" }
+            : { borderRadius: 20, width: 70, height: 40 },
         tabBarStyle: {
           display:
             route.name === "Create" ||
@@ -111,6 +116,38 @@ export default function useRoute(isAuth) {
         }}
         name="Profile"
         component={ProfileScreen}
+      />
+      <MainTab.Screen
+        options={{
+          headerShown: true,
+          title: "Коментарі",
+          headerLeft: ({ focused, size, color }) => (
+            <Pressable
+              style={{ paddingLeft: 15 }}
+              onPress={() => navigation.navigate("Posts")}
+            >
+              <AntDesign name="arrowleft" size={24} color="#212121" />
+            </Pressable>
+          ),
+        }}
+        name="Comment"
+        component={CommentsScreen}
+      />
+      <MainTab.Screen
+        options={{
+          headerShown: true,
+          title: "Карта",
+          headerLeft: ({ focused, size, color }) => (
+            <Pressable
+              style={{ paddingLeft: 15 }}
+              onPress={() => navigation.navigate("Posts")}
+            >
+              <AntDesign name="arrowleft" size={24} color="#212121" />
+            </Pressable>
+          ),
+        }}
+        name="Map"
+        component={MapScreen}
       />
     </MainTab.Navigator>
   );
