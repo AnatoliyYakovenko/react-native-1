@@ -5,9 +5,6 @@ import {
   Text,
   View,
   //   TouchableOpacity,
-  //   KeyboardAvoidingView,
-  //   TouchableWithoutFeedback,
-  //   Keyboard,
 } from "react-native";
 
 export default function MapScreen() {

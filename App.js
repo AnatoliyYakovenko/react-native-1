@@ -6,6 +6,7 @@ import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import Home from "./Screens/Home";
+import Toast from "react-native-toast-message";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -23,6 +24,7 @@ export default function App() {
         <Home />
         <StatusBar style="auto" />
       </NavigationContainer>
+      <Toast position="top" topOffset={50} />
     </View>
   );
 }
