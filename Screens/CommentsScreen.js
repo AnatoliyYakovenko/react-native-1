@@ -13,7 +13,7 @@ import {
 export default function CommentsScreen() {
   return (
     <View style={styles.container}>
-      <Text>dkfjskdfjskdjfk</Text>
+      <Text>Поки що немає коментарів...</Text>
     </View>
   );
 }

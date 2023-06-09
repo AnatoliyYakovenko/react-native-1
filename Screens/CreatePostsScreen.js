@@ -28,17 +28,16 @@ export default function CreatePostsScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [title, setTitle] = useState("");
+  const [coordinates, setCoordinates] = useState({
+    latitude: "",
+    longitude: "",
+  });
   const [location, setLocation] = useState(null);
 
   const hideKeyboard = () => {
     Keyboard.dismiss();
     setIsKeyboardShown(false);
   };
-
-  // const takePhoto = async () => {
-  //   const { uri } = await camera.takePictureAsync();
-  //   await MediaLibrary.createAssetAsync(uri);
-  //   setPhoto(uri);
 
   useEffect(() => {
     (async () => {
@@ -54,21 +53,22 @@ export default function CreatePostsScreen({ navigation }) {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
-  // useEffect(() => {
-  //   (async () => {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       console.log("Permission to access location was denied");
-  //     }
 
-  //     let location = await Location.getCurrentPositionAsync({});
-  //     const coords = {
-  //       latitude: location.coords.latitude,
-  //       longitude: location.coords.longitude,
-  //     };
-  //     setLocation(coords);
-  //   })();
-  // }, []);
+  const getLocation = () => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission to access location was denied");
+        return;
+      }
+
+      let { coords } = await Location.getCurrentPositionAsync();
+      setCoordinates({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
+    })();
+  };
 
   const takePhoto = async () => {
     if (!isCameraReady) {
@@ -78,7 +78,6 @@ export default function CreatePostsScreen({ navigation }) {
       });
       return;
     }
-    const photo = await camera.takePictureAsync();
     setPhoto(photo.uri);
   };
   const resetPhotoState = () => {
@@ -104,27 +103,18 @@ export default function CreatePostsScreen({ navigation }) {
     });
   };
 
-  const sendPost = () => {
-    navigation.navigate("Posts", { photo, title, location });
+  // const sendPost = () => {
+  //   navigation.navigate("Posts", { photo, title, location });
+  //   resetForm();
+  // };
+
+  const onSubmit = () => {
+    getLocation();
+    navigation.navigate("Posts", { photo, title, location, coordinates });
     resetForm();
   };
 
-  //   const onSubmit = async () => {
-  //     if (photo === null && location === '') {
-  //         Toast.show({
-  //             type: 'error',
-  //             text1: 'There are must be photo and title',
-  //         });
-  //         return;
-  //     }
-  //         await uploadPost();
-  //         navigation.navigate('PostsScreen');
-  //         resetPhotoState();
-  //         setTitle('');
-  //         setLocation('');
-  // };
-
-  // console.log(location);
+  console.log(coordinates);
 
   return (
     <TouchableWithoutFeedback onPress={hideKeyboard}>
@@ -209,8 +199,7 @@ export default function CreatePostsScreen({ navigation }) {
             <TouchableOpacity
               activeOpacity={0.8}
               style={styles.publishBtn}
-              // onPress={onSubmit}
-              onPress={sendPost}
+              onPress={onSubmit}
             >
               <Text style={styles.publishBtnTitle}>Опубліковати</Text>
             </TouchableOpacity>

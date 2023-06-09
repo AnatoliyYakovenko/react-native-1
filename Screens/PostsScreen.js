@@ -27,8 +27,8 @@ export default function PostsScreen({ navigation, route }) {
   const handleComment = () => {
     navigation.navigate("Comment");
   };
-  const handleMap = () => {
-    navigation.navigate("Map");
+  const handleMap = (coordinates, title, location) => {
+    navigation.navigate("Map", { coordinates, title, location });
   };
 
   return (
@@ -58,7 +58,11 @@ export default function PostsScreen({ navigation, route }) {
                     <Text style={styles.commentsNumber}>0</Text>
                   </View>
                 </Pressable>
-                <Pressable onPress={handleMap}>
+                <Pressable
+                  onPress={() => {
+                    handleMap(item.coordinates, item.title, item.location);
+                  }}
+                >
                   <View style={styles.locationWrapper}>
                     <Feather name="map-pin" size={24} color="#BDBDBD" />
                     <Text style={styles.locationName}>{item.location}</Text>
