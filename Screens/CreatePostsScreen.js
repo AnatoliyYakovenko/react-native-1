@@ -19,11 +19,13 @@ import { Camera, CameraType } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as Location from "expo-location";
 import Toast from "react-native-toast-message";
+import { handleImage } from "../utils/imagePicker";
 
 export default function CreatePostsScreen({ navigation }) {
   const [isKeyboardShown, setIsKeyboardShown] = useState(false);
   const [camera, setCamera] = useState(null);
   const [photo, setPhoto] = useState(null);
+  const [image, setImage] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
@@ -156,11 +158,21 @@ export default function CreatePostsScreen({ navigation }) {
                 </Camera>
               </View>
             )}
-            <Pressable>
-              <Text style={styles.addImage}>
-                {!photo ? "Завантажте фото" : "Редагувати фото"}
-              </Text>
-            </Pressable>
+            {photo ? (
+              <Pressable
+                style={{ alignSelf: "flex-start" }}
+                onPress={() => handleImage(setPhoto)}
+              >
+                <Text style={styles.addImage}>Редагувати фото</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                style={{ alignSelf: "flex-start" }}
+                onPress={() => handleImage(setPhoto)}
+              >
+                <Text style={styles.addImage}>Завантажити фото</Text>
+              </Pressable>
+            )}
             <TextInput
               value={title}
               onChangeText={(text) => setTitle(text)}

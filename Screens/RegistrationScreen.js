@@ -90,12 +90,6 @@ export default function RegistrationScreen() {
                 )}
               </Pressable>
             </View>
-
-            {/* <View style={styles.avatar}>
-              <View style={styles.addAvatarBtn}>
-                <Icon name="plus" size={18} color="#FF6C00" />
-              </View>
-            </View> */}
             <Text style={styles.regFormTitle}>Реєстрація</Text>
             <KeyboardAvoidingView
               behavior={Platform.OS == "ios" ? "padding" : "height"}
