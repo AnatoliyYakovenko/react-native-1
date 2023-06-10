@@ -3,6 +3,8 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import { useFonts } from "expo-font";
 
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import Home from "./Screens/Home";
@@ -19,13 +21,15 @@ export default function App() {
     return null;
   }
   return (
-    <View style={styles.container}>
-      <NavigationContainer>
-        <Home />
-        <StatusBar style="auto" />
-      </NavigationContainer>
-      <Toast position="top" topOffset={50} />
-    </View>
+    <Provider store={store}>
+      <View style={styles.container}>
+        <NavigationContainer>
+          <Home />
+          <StatusBar style="auto" />
+        </NavigationContainer>
+        <Toast position="top" topOffset={50} />
+      </View>
+    </Provider>
   );
 }
 

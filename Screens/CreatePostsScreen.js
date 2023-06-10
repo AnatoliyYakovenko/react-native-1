@@ -104,18 +104,11 @@ export default function CreatePostsScreen({ navigation }) {
     });
   };
 
-  // const sendPost = () => {
-  //   navigation.navigate("Posts", { photo, title, location });
-  //   resetForm();
-  // };
-
   const onSubmit = () => {
     getLocation();
     navigation.navigate("Posts", { photo, title, location, coordinates });
     resetForm();
   };
-
-  console.log(coordinates);
 
   return (
     <TouchableWithoutFeedback onPress={hideKeyboard}>
