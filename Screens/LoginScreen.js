@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+
+import { useDispatch } from "react-redux";
+import { authSignInUser } from "../redux/auth/authOperations";
+
 import {
   ImageBackground,
   StyleSheet,
@@ -12,7 +16,6 @@ import {
   Keyboard,
 } from "react-native";
 
-
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,8 +25,20 @@ export default function LoginScreen() {
 
   const navigation = useNavigation();
 
+  const dispatch = useDispatch();
+
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+  };
+
   const onLogin = () => {
-    console.log("Credentials", `${email} + ${password}`);
+    const user = {
+      email,
+      password,
+    };
+    dispatch(authSignInUser(user));
+    resetForm();
   };
 
   const handleKeyboard = () => {
