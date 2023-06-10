@@ -6,26 +6,51 @@ import {
   TextInput,
   Text,
   View,
-  Alert,
   TouchableOpacity,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Pressable,
+  Image,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { authSignUpUser } from "../redux/auth/authOperations";
+import { handleImage } from "../utils/imagePicker";
 import Icon from "@expo/vector-icons/Feather";
+import Toast from "react-native-toast-message";
 
 export default function RegistrationScreen() {
-  const [name, setName] = useState("");
+  const [login, setLogin] = useState("");
   const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState(null);
   const [password, setPassword] = useState("");
   const [focused, setFocused] = useState("");
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const dispatch = useDispatch();
+
   const navigation = useNavigation();
 
-  const onLogin = () => {
-    console.log("Credentials", `${name} +${email} + ${password}`);
+  const resetForm = () => {
+    setLogin("");
+    setEmail("");
+    setPassword("");
+    setAvatar(null);
+  };
+  const onRegister = () => {
+    if (email === "" || password === "" || login === "") {
+      Toast.show({ type: "error", text1: "Заповніть всі поля" });
+      return;
+    }
+    const user = {
+      login: login.trim(),
+      email: email.trim(),
+      password: password.trim(),
+      avatar,
+    };
+    dispatch(authSignUpUser(user));
+    resetForm();
   };
 
   const handleKeyboard = () => {
@@ -45,15 +70,32 @@ export default function RegistrationScreen() {
           style={styles.image}
         >
           <View style={styles.regFormWrapper}>
-            <View style={styles.addAvatar}>
-              {/* <Image
-              source={require("./assets/icon.png")}
-              style={styles.avatar}
-            /> */}
+            <View style={styles.addImage}>
+              {avatar ? (
+                <Image style={styles.avatar} source={{ uri: avatar }} />
+              ) : null}
+              <Pressable
+                style={styles.addImageBtn}
+                onPress={() => handleImage(setAvatar)}
+                accessibilityLabel={"Add avatar"}
+              >
+                {avatar ? (
+                  <View style={styles.removeImageBtnImage}>
+                    <Icon name="plus" size={25} color="#BDBDBD" />
+                  </View>
+                ) : (
+                  <View style={styles.addImageBtnImage}>
+                    <Icon name="plus" size={25} color="#FF6C00" />
+                  </View>
+                )}
+              </Pressable>
+            </View>
+
+            {/* <View style={styles.avatar}>
               <View style={styles.addAvatarBtn}>
                 <Icon name="plus" size={18} color="#FF6C00" />
               </View>
-            </View>
+            </View> */}
             <Text style={styles.regFormTitle}>Реєстрація</Text>
             <KeyboardAvoidingView
               behavior={Platform.OS == "ios" ? "padding" : "height"}
@@ -66,8 +108,8 @@ export default function RegistrationScreen() {
               >
                 <TextInput
                   placeholder="Логін"
-                  value={name}
-                  onChangeText={setName}
+                  value={login}
+                  onChangeText={setLogin}
                   onFocus={() => {
                     setIsShowKeyboard(true);
                     setFocused("login");
@@ -112,7 +154,7 @@ export default function RegistrationScreen() {
                   }}
                   style={{
                     ...styles.regFormInput,
-                    borderColor: focused === "email" ? "#FF6C00" : "#E8E8E8",
+                    borderColor: focused === "password" ? "#FF6C00" : "#E8E8E8",
                   }}
                   secureTextEntry={!showPassword}
                 />
@@ -124,7 +166,7 @@ export default function RegistrationScreen() {
                 </Text>
               </View>
             </KeyboardAvoidingView>
-            <TouchableOpacity style={styles.regBtn} onPress={onLogin}>
+            <TouchableOpacity style={styles.regBtn} onPress={onRegister}>
               <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
             </TouchableOpacity>
             <Text style={styles.regIsLogin}>
@@ -159,32 +201,95 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     justifyContent: "flex-end",
-    // alignItems: "center",
   },
-  addAvatar: {
-    position: "relative",
-    marginLeft: "auto",
-    marginRight: "auto",
-    marginTop: -60,
-    marginBottom: 32,
+  avatar: {
+    borderRadius: 16,
     width: 120,
     height: 120,
+  },
+  addImage: {
+    position: "relative",
+    alignSelf: "center",
+    marginTop: -92,
+    marginBottom: 32,
     backgroundColor: "#F6F6F6",
     borderRadius: 16,
+    width: 120,
+    height: 120,
   },
-  addAvatarBtn: {
+  addImageBtn: {
     position: "absolute",
     bottom: 14,
     right: -12,
-    width: 25,
-    height: 25,
+    borderRadius: 50,
+  },
+  addImageBtnImage: {
+    display: "flex",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 50,
     borderWidth: 1,
     borderColor: "#FF6C00",
-    backgroundColor: "#FFF",
+    backgroundColor: "#ffffff",
   },
+  removeImageBtnImage: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: "#BDBDBD",
+    backgroundColor: "#ffffff",
+    transform: [{ rotate: "45deg" }],
+  },
+  // avatar: {
+  //   marginTop: -92,
+  //   alignSelf: "center",
+  //   width: 120,
+  //   height: 120,
+  //   backgroundColor: "#F6F6F6",
+  //   borderRadius: 16,
+  // },
+  // avatarBtn: {
+  //   width: 25,
+  //   height: 25,
+  //   alignSelf: "center",
+  //   marginTop: -39,
+  //   marginRight: -119.5,
+  // },
+  // addAvatar: {
+  //   backgroundColor: "#fff",
+  //   borderRadius: 25,
+  //   borderWidth: 1,
+  //   borderColor: "#FF6C00",
+  //   textAlign: "center",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // },
+  // addAvatar: {
+  //   position: "relative",
+  //   marginLeft: "auto",
+  //   marginRight: "auto",
+  //   marginTop: -60,
+  //   marginBottom: 32,
+  //   width: 120,
+  //   height: 120,
+  //   backgroundColor: "#F6F6F6",
+  //   borderRadius: 16,
+  // },
+  // addAvatarBtn: {
+  //   position: "absolute",
+  //   bottom: 14,
+  //   right: -12,
+  //   width: 25,
+  //   height: 25,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   borderRadius: 50,
+  //   borderWidth: 1,
+  //   borderColor: "#FF6C00",
+  //   backgroundColor: "#FFF",
+  // },
   regFormTitle: {
     textAlign: "center",
     fontFamily: "Roboto-Medium",
