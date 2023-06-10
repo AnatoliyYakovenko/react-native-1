@@ -3,7 +3,7 @@ import { db } from "../../firebase/config";
 
 export const authSignUpUser =
   ({ email, password, login, avatar }) =>
-  async (dispatch, getSatte) => {
+  async () => {
     console.log(email, password, login, avatar);
     try {
       const user = await db
@@ -15,5 +15,5 @@ export const authSignUpUser =
       console.log(error.message);
     }
   };
-export const authSignInUser = () => async (dispatch, getSette) => {};
-export const authSignOutUser = () => async (dispatch, getSette) => {};
+export const authSignInUser = () => async () => {};
+export const authSignOutUser = () => async () => {};
