@@ -24,8 +24,8 @@ export default function PostsScreen({ navigation, route }) {
     }
   }, [route.params]);
 
-  const handleComment = () => {
-    navigation.navigate("Comment");
+  const handleComment = (photo) => {
+    navigation.navigate("Comment", { photo });
   };
   const handleMap = (coordinates, title, location) => {
     navigation.navigate("Map", { coordinates, title, location });
@@ -52,7 +52,11 @@ export default function PostsScreen({ navigation, route }) {
               />
               <Text style={styles.postTitle}>{item.title}</Text>
               <View style={styles.infoWrapper}>
-                <Pressable onPress={handleComment}>
+                <Pressable
+                  onPress={() => {
+                    handleComment(item.photo);
+                  }}
+                >
                   <View style={styles.commentsWrapper}>
                     <Feather name="message-circle" size={24} color="#BDBDBD" />
                     <Text style={styles.commentsNumber}>0</Text>

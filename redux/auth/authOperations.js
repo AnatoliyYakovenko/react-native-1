@@ -10,16 +10,28 @@ import { auth } from "../../firebase/config";
 import { authSlice } from "./authSlice";
 
 export const authSignUpUser =
-  ({ email, password }) =>
+  ({ email, password, login }) =>
   async (dispatch) => {
     // console.log(email, password);
     try {
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
+      await createUserWithEmailAndPassword(auth, email, password);
+      const user = auth.currentUser;
+
+      await user.updateProfile({
+        displayName: login,
+      });
+      const { displayName, uid } = auth.currentUser;
+
+      const userUpdateProfile = {
+        login: displayName,
+        userId: uid,
+      };
+      dispatch(
+        authSlice.actions.updateUserProfile({
+          userId: uid,
+          login: displayName,
+        })
       );
-      dispatch(authSlice.actions.updateUserProfile({ userId: user.uid }));
     } catch (error) {
       console.log(error);
       console.log(error.message);
@@ -70,18 +82,6 @@ export const authSignInUser =
 //   async ({ mail, password }, thunkApi) => {
 //     try {
 //       await signInWithEmailAndPassword(auth, mail, password);
-//     } catch (error) {
-//       return thunkApi.rejectWithValue(error.message);
-//     }
-//   }
-// );
-
-// export const authSingOutUser = createAsyncThunk(
-//   "auth/singOutUser",
-//   async (_, thunkApi) => {
-//     try {
-//       await signOut(auth);
-//       ``;
 //     } catch (error) {
 //       return thunkApi.rejectWithValue(error.message);
 //     }

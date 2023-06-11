@@ -25,7 +25,6 @@ export default function CreatePostsScreen({ navigation }) {
   const [isKeyboardShown, setIsKeyboardShown] = useState(false);
   const [camera, setCamera] = useState(null);
   const [photo, setPhoto] = useState(null);
-  const [image, setImage] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
