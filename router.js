@@ -1,10 +1,13 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { Pressable } from "react-native";
+
+import { authSignOutUser } from "./redux/auth/authOperations";
 
 import LoginScreen from "./Screens/LoginScreen";
 import RegistrationScreen from "./Screens/RegistrationScreen";
@@ -19,6 +22,12 @@ const MainTab = createBottomTabNavigator();
 
 export default function useRoute(isAuth) {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(authSignOutUser());
+  };
+
   if (!isAuth) {
     return (
       <AuthStack.Navigator initialRouteName="Login">
@@ -70,7 +79,7 @@ export default function useRoute(isAuth) {
             <SimpleLineIcons name="grid" size={24} color={color} />
           ),
           headerRight: () => (
-            <Pressable style={{ paddingRight: 16 }}>
+            <Pressable style={{ paddingRight: 16 }} onPress={handleLogout}>
               <Feather name="log-out" size={24} color="#BDBDBD" />
             </Pressable>
           ),

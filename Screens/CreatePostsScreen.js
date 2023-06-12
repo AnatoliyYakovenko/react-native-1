@@ -3,6 +3,9 @@ import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "../firebase/config";
+
 import {
   StyleSheet,
   TextInput,
@@ -59,7 +62,10 @@ export default function CreatePostsScreen({ navigation }) {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert("Permission to access location was denied");
+        Toast.show({
+          type: "info",
+          text1: "Permission to access location was denied",
+        });
         return;
       }
 
@@ -82,6 +88,30 @@ export default function CreatePostsScreen({ navigation }) {
     const photo = await camera.takePictureAsync();
     setPhoto(photo.uri);
   };
+
+  const uploadPhotoToServer = async () => {
+    try {
+      const uniquePostId = Date.now().toString();
+      const response = await fetch(photo);
+      const file = await response.blob();
+
+      const postImageRef = ref(storage, `postImage/${uniquePostId}`);
+      await uploadBytes(postImageRef, file);
+      const processedPhoto = await getDownloadURL(postImageRef);
+      console.log(processedPhoto);
+      Toast.show({
+        type: "success",
+        text1: "Фото успішно завантажено",
+      });
+    } catch (error) {
+      console.error("Error uploading photo: ", error);
+      Toast.show({
+        type: "error",
+        text1: "Помилка при завантаженні фото",
+      });
+    }
+  };
+
   const resetPhotoState = () => {
     setPhoto(null);
   };
@@ -105,8 +135,9 @@ export default function CreatePostsScreen({ navigation }) {
     });
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     getLocation();
+    await uploadPhotoToServer();
     navigation.navigate("Posts", { photo, title, location, coordinates });
     resetForm();
   };

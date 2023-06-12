@@ -18,6 +18,7 @@ import {
 
 export default function PostsScreen({ navigation, route }) {
   const [posts, setPosts] = useState([]);
+
   useEffect(() => {
     if (route.params) {
       setPosts((PrevState) => [...PrevState, route.params]);
