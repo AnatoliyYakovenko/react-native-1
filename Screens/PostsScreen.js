@@ -1,82 +1,98 @@
-import { useState, useEffect } from "react";
-import { Feather } from "@expo/vector-icons";
-
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  //   ImageBackground,
-  StyleSheet,
-  //   TextInput,
-  Text,
   View,
-  FlatList,
   Image,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  FlatList,
   Pressable,
-  //   TouchableOpacity,
-  //   KeyboardAvoidingView,
-  //   TouchableWithoutFeedback,
-  //   Keyboard,
 } from "react-native";
+import Icon from "@expo/vector-icons/Feather";
 
-export default function PostsScreen({ navigation, route }) {
-  const [posts, setPosts] = useState([]);
+import { getAvatar, getEmail, getName } from "../redux/auth/authSelectors";
+import { getPosts } from "../redux/dashboard/dbOperations";
+
+
+const Posts = ({ navigation, route }) => {
+  const dispatch = useDispatch()
+  const image = useSelector(getAvatar)
+  const name = useSelector(getName)
+  const email = useSelector(getEmail)
+
+  const [posts, setPosts] = useState([])
+
 
   useEffect(() => {
-    if (route.params) {
-      setPosts((PrevState) => [...PrevState, route.params]);
+    if (setPosts) {
+      dispatch(getPosts(setPosts))
     }
-  }, [route.params]);
+  }, [setPosts]);
 
-  const handleComment = (photo) => {
-    navigation.navigate("Comment", { photo });
-  };
-  const handleMap = (coordinates, title, location) => {
-    navigation.navigate("Map", { coordinates, title, location });
-  };
+  const handleComment = (image, comments, postId) => {
+    navigation.navigate('Comment',
+      { image, comments, postId },
+    );
+  }
+
+  const handleLocation = (coordinates, text, location) => {
+    navigation.navigate('Map',
+      { coordinates, text, location },
+    );
+  }
 
   return (
     <View style={styles.container}>
+      <View style={styles.userData}>
+
+        <View style={styles.avatar}>
+          {image ? <Image style={styles.avatar} source={{ uri: image }} /> : null}
+        </View>
+        <View>
+          <Text style={styles.name}>
+            {name ? name : 'Anonymous'}
+          </Text>
+          <Text style={styles.email}>
+            {email ? email : 'Anonymous'}
+          </Text>
+        </View>
+      </View>
       <View style={styles.postsList}>
-        <FlatList
-          ListEmptyComponent={() =>
-            posts.length <= 0 ? (
-              <View>
-                <Text>Поки що немає постів</Text>
+        <SafeAreaView >
+          <FlatList
+            ListEmptyComponent={() => (posts.length <= 0 ?
+              <View style={styles.emptyMessageBox}>
+                <Text style={styles.emptyMessageStyle}>No posts added yet...</Text>
               </View>
-            ) : null
-          }
-          data={posts}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.postItem}>
-              <Image
-                style={styles.postImage}
-                source={{ uri: item.photo } ?? require("../assets/bg.png")}
-              />
-              <Text style={styles.postTitle}>{item.title}</Text>
-              <View style={styles.infoWrapper}>
-                <Pressable
-                  onPress={() => {
-                    handleComment(item.photo);
-                  }}
-                >
-                  <View style={styles.commentsWrapper}>
-                    <Feather name="message-circle" size={24} color="#BDBDBD" />
-                    <Text style={styles.commentsNumber}>0</Text>
-                  </View>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    handleMap(item.coordinates, item.title, item.location);
-                  }}
-                >
-                  <View style={styles.locationWrapper}>
-                    <Feather name="map-pin" size={24} color="#BDBDBD" />
-                    <Text style={styles.locationName}>{item.location}</Text>
-                  </View>
-                </Pressable>
+
+              : null)
+            }
+            data={posts}
+            renderItem={({ item }) =>
+              <View style={styles.postsListItem}>
+                <Image style={styles.postImage} source={{ uri: item.image }} />
+                <Text style={styles.postText}>{item.text}</Text>
+                <View style={styles.postDataWrapper}>
+
+                  <Pressable onPress={() => { handleComment(item.image, item.comments, item.postId) }}>
+                    <View style={styles.postDataCommentsWrapper}>
+                      <Icon name='message-circle' size={24} color='#BDBDBD' />
+                      <Text style={styles.postComments}>{item.comments.length ?? item.comments.length}</Text>
+                    </View>
+                  </Pressable>
+                  <Pressable onPress={() => { handleLocation(item.coordinates, item.text, item.location) }}>
+                    <View style={styles.postLocationWrapper}>
+                      <Icon name='map-pin' size={24} color='#BDBDBD' />
+                      <Text style={styles.postLocation}>{item.location}</Text>
+                    </View>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          )}
-        />
+            }
+            keyExtractor={(item) => item.postId}
+          />
+        </SafeAreaView>
       </View>
     </View>
   );
@@ -85,59 +101,98 @@ export default function PostsScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "flex-start",
     alignItems: "flex-start",
+    justifyContent: "flex-start",
+    backgroundColor: "#ffffff",
     paddingHorizontal: 16,
     paddingTop: 32,
-    backgroundColor: "#ffffff",
+  },
+  userData: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    backgroundColor: '#E8E8E8',
+  },
+
+  name: {
+    fontFamily: "Roboto-Bold",
+    fontSize: 13,
+    color: "#212121",
+    fontWeight: 700,
+    lineHeight: 15,
+    textAlign: "center",
+  },
+  email: {
+    fontFamily: "Roboto-Regular",
+    fontSize: 11,
+    color: "#212121",
+    fontWeight: 400,
+    lineHeight: 13,
+    textAlign: "center",
   },
   postsList: {
-    width: "100%",
-    paddingBottom: 50,
+    width: '100%',
+    marginTop: 32,
+    paddingBottom: 50
   },
-  postItem: {
+  postsListItem: {
     marginBottom: 32,
-    flexDirection: "column",
-    gap: 8,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8
   },
   postImage: {
-    width: "100%",
+    width: '100%',
     height: 240,
-    borderRadius: 8,
+    borderRadius: 8
   },
-  postTitle: {
+  postText: {
     fontFamily: "Roboto-Medium",
     fontSize: 16,
     color: "#212121",
-    lineHeight: 19,
+    fontWeight: 500,
+    lineHeight: 19
   },
-  infoWrapper: {
-    flexDirection: "row",
-    gap: 49,
+  postDataWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  commentsWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 6,
+  postDataCommentsWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 6
   },
-  commentsNumber: {
+  postComments: {
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     color: "#BDBDBD",
-    lineHeight: 19,
+    fontWeight: 400,
+    lineHeight: 19
   },
-  locationWrapper: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 6,
+  postLocationWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 6
   },
-  locationName: {
+  postLocation: {
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     color: "#212121",
+    fontWeight: 400,
     lineHeight: 19,
-    textDecorationLine: "underline",
-  },
+    textDecorationLine: 'underline',
+  }
 });
+export default Posts;

@@ -1,52 +1,110 @@
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { AntDesign } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
-
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { storage } from "../firebase/config";
-import { db } from "../firebase/config";
-import { collection, addDoc } from "firebase/firestore";
-
-import {
-  StyleSheet,
-  TextInput,
-  Text,
-  View,
-  Pressable,
-  TouchableOpacity,
-  Image,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import { Camera, CameraType } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
-import * as Location from "expo-location";
-import Toast from "react-native-toast-message";
-import { handleImage } from "../utils/imagePicker";
+import * as Location from 'expo-location';
+import Icon from "@expo/vector-icons/Feather";
+import { FontAwesome5 } from '@expo/vector-icons';
 
-export default function CreatePostsScreen({ navigation }) {
-  const [isKeyboardShown, setIsKeyboardShown] = useState(false);
-  const [camera, setCamera] = useState(null);
-  const [photo, setPhoto] = useState(null);
-  const [isCameraReady, setIsCameraReady] = useState(false);
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Pressable,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  TextInput,
+
+} from "react-native";
+import { imageHandler } from "../utils/imageHandler";
+import { getCity } from "../services/fetchCity";
+import { getUid } from "../redux/auth/authSelectors";
+import { addPost } from "../redux/dashboard/dbOperations";
+
+
+const CreatePost = ({ navigation, route }) => {
+  const dispatch = useDispatch()
+  const userId = useSelector(getUid)
+  const [image, setImage] = useState(null);
+  const [text, setText] = useState('')
+  const [location, setLocation] = useState({ latitude: '', longitude: '' })
+  const [getLocationPressed, setGetLocationPressed] = useState(false)
+  const [place, setPlace] = useState('')
+
+  const [disabled, setDisabled] = useState(true);
+  const [disableClear, setDisableClear] = useState(true);
+
+  const [showKeyboard, setShowKeyboard] = useState(false);
   const [hasPermission, setHasPermission] = useState(null);
+  const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
-  const [title, setTitle] = useState("");
-  const [coordinates, setCoordinates] = useState({
-    latitude: "",
-    longitude: "",
-  });
-  const [location, setLocation] = useState(null);
+  const [photoTaken, setPhotoTaken] = useState(false)
 
-  const { userId, login } = useSelector((state) => state.auth);
+  const textHandler = (text) => {
+    setText(text);
+  }
+  const locationHandler = (text) => {
+    setPlace(text);
+  }
 
-  const hideKeyboard = () => {
-    Keyboard.dismiss();
-    setIsKeyboardShown(false);
-  };
+  const handleKeyboard = () => {
+    Keyboard.dismiss()
+    setShowKeyboard(false)
+  }
+
+  const resetForm = () => {
+    setImage(null)
+    setText("");
+    setLocation({ latitude: '', longitude: '' });
+    setGetLocationPressed(false)
+    setPlace('')
+  }
+
+  const handlePublishPost = (e) => {
+    e.preventDefault();
+
+    if (!location.latitude || !location.longitude) {
+      getLocation()
+    }
+    if (location.latitude && location.longitude) {
+      const data = {
+        userId: userId,
+        comments: [],
+        likes: 0,
+        image,
+        location: place.trim(),
+        coordinates: { ...location },
+        text: text.trim()
+      }
+      dispatch(addPost(data))
+      resetForm()
+      navigation.navigate("Posts")
+    }
+  }
+
+  const handleDeletePost = (e) => {
+    e.preventDefault();
+    resetForm()
+    Alert.alert("Data deleted")
+  }
+
+  const getLocation = () => {
+    (async () => {
+
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      let { coords } = await Location.getCurrentPositionAsync();
+      setLocation({ latitude: coords.latitude, longitude: coords.longitude });
+    })();
+  }
 
   useEffect(() => {
     (async () => {
@@ -56,339 +114,315 @@ export default function CreatePostsScreen({ navigation }) {
       setHasPermission(status === "granted");
     })();
   }, []);
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
 
-  const getLocation = () => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Toast.show({
-          type: "info",
-          text1: "Permission to access location was denied",
-        });
-        return;
+  useEffect(() => {
+    if (text && place && image) {
+      setDisabled(false);
+    }
+    if (!text || !place || !image) {
+      setDisabled(true);
+      setDisableClear(true);
+    }
+    if (text || place || image) {
+      setDisableClear(false);
+    }
+  }, [text, place, image]);
+
+
+
+  useEffect(() => {
+    if (getLocationPressed && location.latitude && location.longitude) {
+
+      const fetchData = async () => {
+        const data = await getCity(location.latitude, location.longitude)
+        console.log(data);
+        setPlace(`${data.cityName}, ${data.country}`);
       }
-
-      let { coords } = await Location.getCurrentPositionAsync();
-      setCoordinates({
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      });
-    })();
-  };
-  async function getAddress() {
-    try {
-      const address = await Location.reverseGeocodeAsync({
-        latitude: coords.coords.latitude,
-        longitude: coords.coords.longitude,
-      });
-      setLocation(`${address[0].city}, ${address[0].country}`);
-      setCountry(address[0].country);
-    } catch (error) {
-      console.log(error);
+      fetchData()
+        .catch(console.error);
     }
+  }, [location.latitude, location.longitude, getLocationPressed]);
+
+
+  if (hasPermission === false) {
+    Alert.alert("No access to camera")
   }
-
-  const takePhoto = async () => {
-    if (!isCameraReady) {
-      Toast.show({
-        type: "info",
-        text1: "Камера ще не готова",
-      });
-      return;
-    }
-    const photo = await camera.takePictureAsync();
-    setPhoto(photo.uri);
-  };
-
-  const uploadPhotoToServer = async () => {
-    try {
-      const uniquePostId = Date.now().toString();
-      const response = await fetch(photo);
-      const file = await response.blob();
-
-      const postImageRef = ref(storage, `postImage/${uniquePostId}`);
-      await uploadBytes(postImageRef, file);
-      const processedPhoto = await getDownloadURL(postImageRef);
-      console.log(processedPhoto);
-      Toast.show({
-        type: "success",
-        text1: "Фото успішно завантажено",
-      });
-    } catch (error) {
-      console.error("Error uploading photo: ", error);
-      Toast.show({
-        type: "error",
-        text1: "Помилка при завантаженні фото",
-      });
-    }
-  };
-
-  const uploadPost = async () => {
-    try {
-      const photo = await uploadPhotoToServer();
-      // console.log(photo);
-      await addDoc(collection(db, "posts"), {
-        userId,
-        login,
-        photo,
-        title,
-        location,
-        coordinates: coordinates.coords,
-        date: Date.now().toString(),
-        country,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const resetPhotoState = () => {
-    setPhoto(null);
-  };
-  const toggleCameraType = () => {
-    setType((current) =>
-      current === CameraType.back ? CameraType.front : CameraType.back
-    );
-  };
-
-  const resetForm = () => {
-    setPhoto(null);
-    setTitle("");
-    setLocation(null);
-  };
-  const handleDeletePost = (e) => {
-    e.preventDefault();
-    resetForm();
-    Toast.show({
-      type: "info",
-      text1: "Дані видалено",
-    });
-  };
-
-  const onSubmit = async () => {
-    getLocation();
-    await uploadPhotoToServer();
-    navigation.navigate("Posts", { photo, title, location, coordinates });
-    resetForm();
-  };
 
   return (
-    <TouchableWithoutFeedback onPress={hideKeyboard}>
+    <TouchableWithoutFeedback onPress={handleKeyboard}>
       <View style={styles.container}>
         <KeyboardAvoidingView
-          behavior={Platform.OS == "ios" ? "padding" : "height"}
+          behavior={Platform.OS == "ios" && "padding"}
         >
-          <View
-            style={{
-              ...styles.form,
-              paddingTop: isKeyboardShown ? 0 : 32,
-            }}
-          >
-            {photo ? (
-              <View style={styles.photoWrapper}>
-                <Image style={styles.camera} source={{ uri: photo }} />
+          <View style={{ ...styles.addPostForm, paddingBottom: showKeyboard && Platform.OS == "android" ? 32 : 270 }}>
+
+            {hasPermission && !photoTaken && image ? (
+              <View style={styles.addImage}>
+                {image ?
+                  <Image style={styles.picture} source={{ uri: image }} /> : null}
                 <Pressable
-                  style={styles.cameraOnPhotoBtn}
-                  onPress={resetPhotoState}
+                  style={image ? { ...styles.addImageBtn, backgroundColor: 'rgba(255, 255, 255, 0.3)' } : styles.addImageBtn}
+                  onPress={() => { setPhotoTaken(false); setImage(null) }}
+                  accessibilityLabel={"Add picture"}
                 >
-                  <AntDesign name="camera" size={24} color="#FFFFFF" />
+                  <FontAwesome5 name="camera" size={20} color={image ? "#FFFFFF" : "#BDBDBD"} style={styles.addImageBtnIcon} />
                 </Pressable>
               </View>
-            ) : (
-              <View style={styles.cameraWrapper}>
+            )
+              :
+              hasPermission && !photoTaken && !image ? (
                 <Camera
-                  style={styles.camera}
+                  style={styles.addImage}
                   type={type}
-                  ref={setCamera}
-                  onCameraReady={() => setIsCameraReady(true)}
+                  ref={(ref) => {
+                    setCameraRef(ref);
+                  }}
                 >
-                  <Pressable style={styles.cameraBtn} onPress={takePhoto}>
-                    <AntDesign name="camera" size={24} color="#BDBDBD" />
-                  </Pressable>
-
-                  <View style={{ position: "absolute", right: 10, bottom: 10 }}>
-                    <TouchableOpacity onPress={toggleCameraType}>
-                      <MaterialIcons
-                        name="flip-camera-android"
-                        size={24}
-                        color="#BDBDBD"
-                      />
-                    </TouchableOpacity>
+                  <View style={styles.picture}>
+                    {/* <Pressable
+            style={styles.flipContainer}
+            onPress={() => {
+              setType(
+                type === Camera.Constants.Type.back
+                  ? Camera.Constants.Type.front
+                  : Camera.Constants.Type.back
+              );
+            }}
+          >
+            <Text style={{ fontSize: 18, marginBottom: 10, color: "black" }}>
+              Flip
+            </Text>
+          </Pressable> */}
+                    <Pressable
+                      style={styles.addImageBtn}
+                      onPress={async () => {
+                        if (cameraRef) {
+                          const { uri } = await cameraRef.takePictureAsync();
+                          await MediaLibrary.createAssetAsync(uri);
+                          setImage(uri)
+                          setPhotoTaken(true)
+                        }
+                      }}
+                    >
+                      <FontAwesome5 name="camera" size={20} color={image ? "#FFFFFF" : "#BDBDBD"} style={styles.addImageBtnIcon} />
+                    </Pressable>
                   </View>
-                </Camera>
-              </View>
-            )}
-            {photo ? (
-              <Pressable
-                style={{ alignSelf: "flex-start" }}
-                onPress={() => handleImage(setPhoto)}
-              >
-                <Text style={styles.addImage}>Редагувати фото</Text>
+                </Camera>)
+                : hasPermission && photoTaken ? (
+                  <View style={styles.addImage}>
+                    {image ?
+                      <Image style={styles.picture} source={{ uri: image }} /> : null}
+                    <Pressable
+                      style={image ? { ...styles.addImageBtn, backgroundColor: 'rgba(255, 255, 255, 0.3)' } : styles.addImageBtn}
+                      onPress={() => { setPhotoTaken(false) }}
+                      accessibilityLabel={"Add picture"}
+                    >
+                      <FontAwesome5 name="camera" size={20} color={image ? "#FFFFFF" : "#BDBDBD"} style={styles.addImageBtnIcon} />
+                    </Pressable>
+                  </View>
+                ) :
+                  (
+                    <View style={styles.addImage}>
+                      {image ?
+                        <Image style={styles.picture} source={{ uri: image }} /> : null}
+                      <Pressable
+                        style={image ? { ...styles.addImageBtn, backgroundColor: 'rgba(255, 255, 255, 0.3)' } : styles.addImageBtn}
+                        onPress={() => imageHandler(setImage)}
+                        accessibilityLabel={"Add picture"}
+                      >
+                        <FontAwesome5 name="camera" size={20} color={image ? "#FFFFFF" : "#BDBDBD"} style={styles.addImageBtnIcon} />
+                      </Pressable>
+                    </View>
+                  )
+            }
+            {image ?
+              <Pressable style={{ alignSelf: 'flex-start' }} onPress={() => imageHandler(setImage)} accessibilityLabel={"Change picture"}>
+                <Text style={styles.addImageText}>Change photo</Text>
+              </Pressable> :
+              <Pressable style={{ alignSelf: 'flex-start' }} onPress={() => imageHandler(setImage)} accessibilityLabel={"Add picture"}>
+                <Text style={styles.addImageText}>Add photo</Text>
               </Pressable>
-            ) : (
-              <Pressable
-                style={{ alignSelf: "flex-start" }}
-                onPress={() => handleImage(setPhoto)}
-              >
-                <Text style={styles.addImage}>Завантажити фото</Text>
-              </Pressable>
-            )}
-            <TextInput
-              value={title}
-              onChangeText={(text) => setTitle(text)}
-              placeholder="Назва..."
-              placeholderTextColor={"#BDBDBD"}
-              style={styles.postTitle}
-              onFocus={() => {
-                setIsKeyboardShown(true);
-              }}
-              onBlur={() => {
-                setIsKeyboardShown(false);
-              }}
-            />
-            <View style={styles.inputContainer}>
-              <AntDesign name="enviromento" size={24} color="#BDBDBD" />
+            }
+
+            <View style={styles.inputWrapper}>
               <TextInput
-                value={location}
-                onChangeText={(text) => setLocation(text)}
-                placeholder="Месцевість..."
-                placeholderTextColor={"#BDBDBD"}
-                style={styles.postLocation}
+                value={text}
+                selectionColor='#FF6C00'
+                onChangeText={textHandler}
                 onFocus={() => {
-                  setIsKeyboardShown(true);
+                  setShowKeyboard(true);
                 }}
-                onBlur={() => {
-                  setIsKeyboardShown(false);
-                }}
+                placeholder="Description..."
+                style={text ? styles.input : { ...styles.input, fontFamily: 'Roboto-Regular' }}
               />
             </View>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.publishBtn}
-              onPress={onSubmit}
-            >
-              <Text style={styles.publishBtnTitle}>Опубліковати</Text>
-            </TouchableOpacity>
-            <Pressable style={styles.deleteBtn} onPress={handleDeletePost}>
-              <Feather name="trash-2" size={24} color="#BDBDBD" />
+            <View style={styles.inputWrapper}>
+              <Pressable onPress={() => {
+                setGetLocationPressed(true)
+                getLocation()
+              }} >
+                <Icon name='map-pin' size={24} color='#BDBDBD' />
+              </Pressable>
+              <TextInput
+                value={place}
+                selectionColor='#FF6C00' r
+                onChangeText={locationHandler}
+                onFocus={() => {
+                  setShowKeyboard(true);
+                }}
+                placeholder="Location..."
+                style={{ ...styles.input, fontFamily: 'Roboto-Regular' }}
+              />
+            </View>
+            <Pressable
+              disabled={disabled}
+              style={disabled ? { ...styles.addPostBtn, backgroundColor: '#F6F6F6' } : styles.addPostBtn}
+              onPress={handlePublishPost}
+              accessibilityLabel={"Publish post"}>
+              <Text style={disabled ? { ...styles.addPostBtnText, color: '#BDBDBD' } : styles.addPostBtnText}>Publish</Text>
+            </Pressable>
+
+            <Pressable
+              disabled={disableClear}
+              style={disableClear ? { ...styles.removePostBtn, backgroundColor: '#F6F6F6' } : styles.removePostBtn}
+              onPress={handleDeletePost}
+              accessibilityLabel={"Delete post"}>
+              <Icon name='trash-2' size={24} color={disableClear ? '#BDBDBD' : '#ffffff'} />
             </Pressable>
           </View>
+
         </KeyboardAvoidingView>
       </View>
     </TouchableWithoutFeedback>
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
     paddingHorizontal: 16,
+
   },
-  form: {
+  addPostForm: {
     paddingTop: 32,
-  },
-  photoWrapper: {
-    position: "relative",
-    backgroundColor: "#F6F6F6",
-    height: 240,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-    borderRadius: 8,
-  },
-  cameraWrapper: {
-    backgroundColor: "#F6F6F6",
-    height: 240,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  camera: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: 240,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-  },
-  cameraBtn: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#fff",
-  },
-  cameraOnPhotoBtn: {
-    position: "absolute",
-    top: 90,
-    left: "42%",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   addImage: {
+    position: 'relative',
+    width: 343,
+    height: 240,
+    backgroundColor: "#E8E8E8",
+    borderRadius: 8,
+  },
+  addImageBtn: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    width: 60,
+    height: 60,
+    top: 90,
+    left: 142,
+    position: 'absolute',
+    borderRadius: 50,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  addImageBtnIcon: {
+  },
+  picture: {
+    width: 343,
+    height: 240,
+    // backgroundColor:"#E8E8E8",
+    borderRadius: 8,
+  },
+  addImageText: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
     color: "#BDBDBD",
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    paddingTop: 6,
+    fontWeight: 400,
+    lineHeight: 19,
+    textAlign: "left",
   },
-  postTitle: {
+  inputWrapper: {
     marginTop: 32,
-    paddingVertical: 16,
-    paddingHorizontal: 0,
+    alignSelf: 'flex-start',
+    width: '100%',
+    height: 50,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    gap: 4,
+    borderBottomColor: '#E8E8E8',
     borderBottomWidth: 1,
-    borderBottomColor: "#E8E8E8",
-    fontFamily: "Roboto-Regular",
+  },
+  input: {
+    fontFamily: "Roboto-Medium",
     fontSize: 16,
-    color: "#000",
+    color: "#212121",
+    //fontWeight: 500,
+    lineHeight: 19,
+    textAlign: "left",
   },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E8E8E8",
-  },
-  postLocation: {
-    paddingHorizontal: 0,
-    marginLeft: 4,
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    color: "#000",
-  },
-  publishBtn: {
+  addPostBtn: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 32,
+    width: '100%',
     backgroundColor: "#FF6C00",
     borderRadius: 100,
-    marginTop: 32,
     padding: 16,
-    justifyContent: "center",
-    alignItems: "center",
   },
-  publishBtnTitle: {
-    color: "#fff",
-    fontSize: 16,
+  addPostBtnText: {
     fontFamily: "Roboto-Regular",
+    textAlign: "center",
+    color: "#ffffff",
+    fontSize: 16,
+    lineHeight: 19,
   },
-  deleteBtn: {
-    backgroundColor: "#F6F6F6",
+  removePostBtn: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: 70,
     height: 40,
+    padding: 8,
+    marginTop: 120,
+    backgroundColor: "#FF6C00",
     borderRadius: 20,
+  },
+
+  flipContainer: {
+    flex: 0.3,
+    alignSelf: "flex-end",
+  },
+
+  takePhotoOut: {
+    borderWidth: 2,
+    borderColor: "white",
+    height: 50,
+    width: 50,
+    display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "center",
-    marginTop: 120,
+    borderRadius: 50,
+  },
+
+  takePhotoInner: {
+    borderWidth: 2,
+    borderColor: "white",
+    height: 40,
+    width: 40,
+    backgroundColor: "black",
+    borderRadius: 50,
   },
 });
+
+export default CreatePost;

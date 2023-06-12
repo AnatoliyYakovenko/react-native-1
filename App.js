@@ -1,41 +1,75 @@
-import "react-native-gesture-handler";
-import { NavigationContainer } from "@react-navigation/native";
-
-import { useFonts } from "expo-font";
-
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import { Provider } from "react-redux";
-import { store } from "./redux/store";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View } from "react-native";
+import Container from 'toastify-react-native';
+import 'expo-dev-menu';
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import Login from "./Screens/LoginScreen";
+import Register from "./Screens/RegistrationScreen";
 import Home from "./Screens/Home";
-import Toast from "react-native-toast-message";
+import useCachedResources from "./hooks/useCachedResourses";
+import { store } from "./redux/store";
+import { currentState } from "./redux/auth/authOperations";
+import { getIsLoggedIn } from "./redux/auth/authSelectors";
 
-export default function App() {
-  const [fontsLoaded] = useFonts({
-    "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
-    "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
-    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
-  });
 
-  if (!fontsLoaded) {
-    return null;
+const fontsLoaded = {
+  "Roboto-Medium": require("./assets/fonts/Roboto-Medium.ttf"),
+  "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
+  "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
+};
+
+const MainStack = createStackNavigator();
+
+export default () => {
+  const isLoadingComplete = useCachedResources(fontsLoaded);
+
+  if (!isLoadingComplete) {
+    return null
+  } else {
+
+    return (
+      <Provider store={store}>
+        <App />
+      </Provider>
+    )
   }
+}
+
+
+const App = () => {
+  const dispatch = useDispatch()
+  const isLoggedIn = useSelector(getIsLoggedIn)
+
+
+  useEffect(() => {
+    dispatch(currentState())
+  }, [])
+
+  //  console.log(isLoggedIn);
+
   return (
-    <Provider store={store}>
-      <View style={styles.container}>
-        <NavigationContainer>
-          <Home />
-          <StatusBar style="auto" />
-        </NavigationContainer>
-        <Toast position="top" topOffset={50} />
-      </View>
-    </Provider>
+    <NavigationContainer>
+      <Container position="center" style={{
+        borderRadius: 20,
+        fontSize: 8,
+        width: 350,
+        height: 100,
+      }}
+        textStyle={{ fontSize: 8 }}
+        duration={5000} animationStyle={'zoomInOut'} />
+
+      <MainStack.Navigator initialRouteName="Login">
+        {isLoggedIn ? <MainStack.Screen name="Home" component={Home} options={{ headerShown: false }} /> :
+          <>
+            <MainStack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+            <MainStack.Screen name="Registration" component={Register} options={{ headerShown: false }} />
+          </>}
+
+      </MainStack.Navigator>
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-});
+

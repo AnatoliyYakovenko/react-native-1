@@ -1,20 +1,18 @@
-import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import authSlice from './auth/authSlice';
+import dbSlice from './dashboard/dbSlice'
 
-import { authSlice } from "./auth/authSlice";
 
-const rootReducer = combineReducers({
-  [authSlice.name]: authSlice.reducer,
-});
+const rootReducer= combineReducers({
+  auth: authSlice,
+  db: dbSlice
+})
+
 
 export const store = configureStore({
-  reducer: rootReducer,
-});
-
-// import { configureStore } from "@reduxjs/toolkit";
-// import { authSlice } from "./auth/authSlice";
-
-// export const store = configureStore({
-//   reducer: {
-//     auth: authSlice,
-//   },
-// });
+    reducer: rootReducer,
+    middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false
+    }),
+})

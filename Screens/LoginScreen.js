@@ -1,129 +1,172 @@
-import { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
-
-import { useDispatch } from "react-redux";
-import { authSignInUser } from "../redux/auth/authOperations";
-
+import React, { useEffect, useState } from "react";
+import { useDispatch } from 'react-redux';
 import {
-  ImageBackground,
-  StyleSheet,
-  TextInput,
-  Text,
-  View,
-  TouchableOpacity,
-  KeyboardAvoidingView,
   TouchableWithoutFeedback,
+  StyleSheet,
+  View,
+  TextInput,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ImageBackground,
+  Text,
 } from "react-native";
+import { signIn } from "../redux/auth/authOperations";
 
-export default function LoginScreen() {
+const Login = ({ navigation }) => {
+  const dispatch = useDispatch()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [focused, setFocused] = useState("");
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [disabled, setDisabled] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [focused, setFocused] = useState("");
 
-  const navigation = useNavigation();
 
-  const dispatch = useDispatch();
+  const emailHandler = (text) => {
+    setEmail(text.trim());
+  };
+  const passwordHandler = (text) => {
+    setPassword(text.trim());
+  };
 
   const resetForm = () => {
     setEmail("");
     setPassword("");
-  };
+  }
 
-  const onLogin = () => {
+  const onLogin = (e) => {
+    e.preventDefault();
     const user = {
-      email,
+      email: email.trim(),
       password,
-    };
-    dispatch(authSignInUser(user));
-    resetForm();
+    }
+    dispatch(signIn(user))
+    resetForm()
   };
 
-  const handleKeyboard = () => {
-    Keyboard.dismiss();
-    setIsShowKeyboard(false);
-  };
   const handleInputShow = () => {
     setShowPassword(!showPassword);
   };
+
+  const handleKeyboard = () => {
+    Keyboard.dismiss()
+    setShowKeyboard(false)
+  }
+
+  useEffect(() => {
+    if (email && password) {
+      setDisabled(false);
+    }
+    if (!email || !password) {
+      setDisabled(true);
+    }
+  }, [email, password]);
+
+
 
   return (
     <TouchableWithoutFeedback onPress={handleKeyboard}>
       <View style={styles.container}>
         <ImageBackground
-          source={require("../assets/bg.png")}
-          resizeMode="cover"
-          style={styles.image}
+          style={styles.bgImage}
+          source={require("../assets/images/bg.jpg")}
         >
-          <View style={styles.loginFormWrapper}>
-            <Text style={styles.loginFormTitle}>Увійти</Text>
-            <KeyboardAvoidingView
-              behavior={Platform.OS == "ios" ? "padding" : "height"}
+          <KeyboardAvoidingView
+            behavior={Platform.OS == "ios" && "padding"}
+          >
+            <View
+              style={{
+                ...styles.form,
+                paddingBottom: showKeyboard && Platform.OS == "android" ? 32 : 111,
+
+              }}
             >
-              <View
-                style={{
-                  ...styles.loginFormInputWrapper,
-                  paddingBottom: isShowKeyboard ? 95 : 43,
-                }}
-              >
+              <Text style={styles.title}>Login</Text>
+              <View style={styles.inputWrapper}>
                 <TextInput
-                  placeholder="Адреса електронної пошти"
                   value={email}
-                  onChangeText={setEmail}
+                  returnKeyType="next"
+                  autoCompleteType="email"
+                  textContentType="emailAddress"
+                  keyboardType="email-address"
+                  autoCapitalize='none'
+                  selectionColor='#FF6C00'
+                  onChangeText={emailHandler}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
+                    setShowKeyboard(true);
                     setFocused("email");
                   }}
                   onBlur={() => {
                     setFocused("");
-                    setIsShowKeyboard(false);
                   }}
+                  placeholder="Email address"
                   style={{
-                    ...styles.loginFormInput,
+                    ...styles.input,
                     borderColor: focused === "email" ? "#FF6C00" : "#E8E8E8",
                   }}
                 />
+              </View>
+              <View style={styles.inputWrapper}>
                 <TextInput
-                  placeholder="Пароль"
                   value={password}
-                  onChangeText={setPassword}
+                  returnKeyType="done"
+                  selectionColor='#FF6C00'
+                  onChangeText={passwordHandler}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
+                    setShowKeyboard(true);
                     setFocused("password");
                   }}
                   onBlur={() => {
                     setFocused("");
-                    setIsShowKeyboard(false);
                   }}
-                  style={{
-                    ...styles.loginFormInput,
-                    borderColor: focused === "password" ? "#FF6C00" : "#E8E8E8",
-                  }}
+                  placeholder="Password"
                   secureTextEntry={!showPassword}
+                  style={{
+                    ...styles.input,
+                    borderColor:
+                      focused === "password" ? "#FF6C00" : "#E8E8E8",
+                  }}
                 />
-                <Text
-                  style={styles.loginShowPasswordBtn}
+                <Pressable
+                  style={styles.passwordIndicator}
                   onPress={handleInputShow}
+                  accessibilityLabel={"Show password"}
                 >
-                  {showPassword ? "Приховати" : "Показати"}
-                </Text>
+                  <Text
+                    style={{
+                      ...styles.passwordIndicatorText,
+                      opacity: !password ? 0.5 : 1,
+                    }}
+                  >
+                    Show
+                  </Text>
+                </Pressable>
               </View>
-            </KeyboardAvoidingView>
-            <TouchableOpacity style={styles.loginBtn} onPress={onLogin}>
-              <Text style={styles.loginBtnTitle}>Увійти</Text>
-            </TouchableOpacity>
-            <Text style={styles.loginHasAccount}>
-              Немає акаунту?{" "}
-              <Text
-                style={styles.loginReg}
-                onPress={() => navigation.navigate("Registration")}
+
+              <Pressable
+                disabled={disabled}
+                style={{ ...styles.button, opacity: disabled ? 0.7 : 1 }}
+                onPress={onLogin}
+                accessibilityLabel={"Login"}
               >
-                Зареєструватися
-              </Text>
-            </Text>
-          </View>
+                <Text style={styles.buttonText}>Log in</Text>
+              </Pressable>
+
+              <View style={styles.navBlock}>
+                <Text
+                  style={styles.passwordIndicatorText
+                  }
+                >  Don't have an account?</Text>
+                <Pressable onPress={() => navigation.navigate("Registration")}>
+                  <Text style={styles.passwordIndicatorText
+                  }>Register</Text>
+                </Pressable>
+              </View>
+
+            </View>
+          </KeyboardAvoidingView>
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
@@ -134,70 +177,78 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
+    backgroundColor: "#ecf0f1",
   },
-  loginFormWrapper: {
-    position: "relative",
-    width: "100%",
-    paddingTop: 32,
-    paddingBottom: 144,
-    backgroundColor: "#FFF",
-    borderRadius: 25,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+  input: {
+    height: 50,
+    padding: 16,
+    backgroundColor: "#F6F6F6",
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    borderRadius: 8,
+    marginBottom: 16,
   },
-  image: {
+  bgImage: {
     flex: 1,
     justifyContent: "flex-end",
   },
-  loginFormTitle: {
-    textAlign: "center",
+  form: {
+    justifyContent: "flex-start",
+    backgroundColor: "#ffffff",
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    paddingTop: 32,
+    paddingHorizontal: 16,
+  },
+  inputWrapper: {
+    position: "relative",
+  },
+  passwordIndicator: {
+    position: "absolute",
+    right: 16,
+    top: 16,
+  },
+  passwordIndicatorText: {
+    fontFamily: "Roboto-Regular",
+    color: "#1B4371",
+    fontSize: 16,
+    fontWeight: 400,
+    textAlign: "right",
+  },
+
+  title: {
     fontFamily: "Roboto-Medium",
     fontSize: 30,
+    color: "#212121",
+    fontWeight: 500,
+    lineHeight: 35,
+    textAlign: "center",
+    letterSpacing: 0.01,
+    marginBottom: 32,
   },
-  loginFormInputWrapper: {
-    gap: 16,
-    marginTop: 32,
-  },
-  loginFormInput: {
-    height: 50,
-    marginHorizontal: 16,
-    paddingStart: 16,
-    backgroundColor: "#F6F6F6",
-    borderWidth: 1,
-    borderRadius: 8,
-    columnGap: 16,
-  },
-  loginShowPasswordBtn: {
-    position: "absolute",
-    top: 82,
-    right: 32,
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    lineHeight: 19,
-    color: "#1B4371",
-  },
-  loginBtn: {
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 16,
+
+  button: {
     backgroundColor: "#FF6C00",
     borderRadius: 100,
-    borderColor: "black",
+    padding: 16,
   },
-  loginBtnTitle: {
+  buttonText: {
     fontFamily: "Roboto-Regular",
+    textAlign: "center",
+    color: "#ffffff",
     fontSize: 16,
     lineHeight: 19,
-    color: "#FFF",
   },
-  loginHasAccount: {
+  navBlock: {
     marginTop: 16,
-    textAlign: "center",
-    fontSize: 16,
-    color: "#1B4371",
-  },
-  loginReg: {
-    textDecorationLine: "underline",
-  },
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 4,
+    justifyContent: 'center'
+  }
 });
+
+
+export default Login;

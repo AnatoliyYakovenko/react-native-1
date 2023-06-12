@@ -3,11 +3,12 @@ import { View, StyleSheet, Dimensions } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 
-export default function MapScreen({ route }) {
-  const coordinates = route.params.coordinates;
-  const title = route.params.title;
-  const location = route.params.location;
-  const [currentLocation, setCurrentLocation] = useState(null);
+const Map = ({ navigation, route }) => {
+  const coordinates = route.params.coordinates
+  const text = route.params.text
+  const description = route.params.location
+
+  const [location, setLocation] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -20,46 +21,54 @@ export default function MapScreen({ route }) {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       };
-      setCurrentLocation(coords);
+      setLocation(coords);
     })();
   }, []);
 
   return (
-    <View style={styles.container}>
-      <MapView
+    coordinates.latitude && coordinates.longitude ?
+      (<View style={styles.container}>
+        <MapView
+          style={styles.mapStyle}
+          region={{
+            ...coordinates,
+          }}
+          showsUserLocation={true}
+        >
+          <Marker
+            title={text ? text : 'Pic location'}
+            coordinate={coordinates}
+            description={description ?
+              description : 'Pic was taken here'}
+          />
+        </MapView>
+      </View>)
+      :
+      (<MapView
         style={styles.mapStyle}
-        region={
-          coordinates.latitude && coordinates.longitude
-            ? coordinates
-            : currentLocation
-        }
+        region={{
+          ...location,
+        }}
         showsUserLocation={true}
       >
-        {coordinates.latitude && coordinates.longitude ? (
-          <Marker
-            title={title ? title : "Pic location"}
-            coordinate={coordinates}
-            description={location ? location : "Pic was taken here"}
-          />
-        ) : (
-          currentLocation && (
-            <Marker
-              title="You are here"
-              coordinate={currentLocation}
-              description="Your current location"
-            />
-          )
+        {location && (
+          <Marker title="You are here" coordinate={location} description="Your current location" />
         )}
-      </MapView>
-    </View>
-  );
-}
+      </MapView>)
+  )
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
   mapStyle: {
     width: Dimensions.get("window").width,
     height: Dimensions.get("window").height,
   },
 });
+
+export default Map;

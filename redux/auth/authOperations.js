@@ -1,72 +1,82 @@
-// export const authSignOutUser = () => async () => {};
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { Toast } from 'toastify-react-native';
+import { authStateChanged, getCurrentUserInfo, loginDB, registerDB, logOut } from '../../services/auth';
 
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut,
-  updateProfile,
-} from "firebase/auth";
-import { auth } from "../../firebase/config";
-import { authSlice } from "./authSlice";
 
-export const authSignUpUser =
-  ({ email, password, login }) =>
-  async (dispatch) => {
+
+export const signUp = createAsyncThunk(
+  'auth/signup',
+  async (user, { rejectWithValue }) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      const user = auth.currentUser;
-
-      await user.updateProfile({
-        displayName: login,
-      });
-      const { displayName, uid } = auth.currentUser;
-
-      const userUpdateProfile = {
-        login: displayName,
-        userId: uid,
-      };
-      dispatch(authSlice.actions.updateUserProfile(userUpdateProfile));
+      const { login, email, password, image } = user;
+      const result = await registerDB({ email: email, password: password, displayName: login, image });
+      // console.log('register result from operations', result);
+      return result;
     } catch (error) {
-      console.log(error);
-      console.log(error.message);
+      console.dir({ error })
+      Toast.error(`${error.code}`);
+      return rejectWithValue(error);
     }
-  };
+  }
+);
 
-export const authSignInUser =
-  ({ email, password }) =>
-  async () => {
+export const signIn = createAsyncThunk(
+  'auth/signin',
+  async (user, { rejectWithValue }) => {
+    //  console.log('user', user);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { email, password } = user;
+      const result = await loginDB({ email: email, password: password });
+      // console.log('login', result);
+      return result;
     } catch (error) {
-      console.log(error);
-      console.log(error.message);
+      console.dir({ error })
+      Toast.error(`${error.code}`);
+      return rejectWithValue(error);
     }
-  };
-export const authStateChangeUser = () => async (dispatch) => {
-  try {
-    await onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userUpdateProfile = {
-          login: user.displayName,
-          userId: user.uid,
-        };
-        dispatch(authSlice.actions.authStateChange({ stateChange: true }));
-        dispatch(authSlice.actions.updateUserProfile(userUpdateProfile));
-      }
-    });
-  } catch (error) {
-    console.log(error);
-    console.log(error.message);
   }
-};
+);
 
-export const authSignOutUser = () => async (dispatch) => {
-  try {
-    await signOut(auth);
-    dispatch(authSlice.actions.authSignOut());
-  } catch (error) {
-    console.log(error);
-    console.log(error.message);
+export const signOut = createAsyncThunk(
+  'auth/signout',
+  async (_, { rejectWithValue }) => {
+    try {
+      await logOut();
+      return;
+    } catch (error) {
+      console.dir({ error })
+      Toast.error(`${error.code}`);
+      return rejectWithValue(error);
+    }
   }
-};
+);
+
+export const currentUser = createAsyncThunk(
+  'auth/currentUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const result = await getCurrentUserInfo();
+      console.log('current', result);
+      return result;
+    } catch (error) {
+      console.dir({ error })
+      Toast.error(`${error.code}`);
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const currentState = createAsyncThunk(
+  'auth/currentState',
+  async (_, { rejectWithValue }) => {
+    try {
+      const result = await authStateChanged();
+      // console.log('state', result);
+      return result
+    } catch (error) {
+      console.dir({ error })
+      Toast.error(`${error.code}`);
+      return rejectWithValue(error);
+    }
+  }
+);

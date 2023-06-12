@@ -1,209 +1,304 @@
-import { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
-import {
-  ImageBackground,
-  StyleSheet,
-  TextInput,
-  Text,
-  View,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Pressable,
-  Image,
-} from "react-native";
-import { useDispatch } from "react-redux";
-import { authSignUpUser } from "../redux/auth/authOperations";
-import { handleImage } from "../utils/imagePicker";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from 'react-redux';
 import Icon from "@expo/vector-icons/Feather";
-import Toast from "react-native-toast-message";
+import {
+  TouchableWithoutFeedback,
+  StyleSheet,
+  View,
+  TextInput,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ImageBackground,
+  Text,
+  Image
+} from "react-native";
+import { imageHandler } from "../utils/imageHandler";
+import { signUp } from "../redux/auth/authOperations";
 
-export default function RegistrationScreen() {
-  const [login, setLogin] = useState("");
+
+
+const Registration = ({ navigation }) => {
+  const dispatch = useDispatch()
+  const [login, setLogin] = useState('')
   const [email, setEmail] = useState("");
-  const [avatar, setAvatar] = useState(null);
   const [password, setPassword] = useState("");
-  const [focused, setFocused] = useState("");
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [image, setImage] = useState(null);
+  const [disabled, setDisabled] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [focused, setFocused] = useState("");
 
-  const dispatch = useDispatch();
 
-  const navigation = useNavigation();
+  const loginHandler = (text) => {
+    setLogin(text);
+  }
+  const emailHandler = (text) => {
+    setEmail(text);
+  };
+
+  const passwordHandler = (text) => {
+    setPassword(text.trim());
+  };
 
   const resetForm = () => {
-    setLogin("");
+    setLogin('')
     setEmail("");
     setPassword("");
-    setAvatar(null);
-  };
-  const onRegister = () => {
-    if (email === "" || password === "" || login === "") {
-      Toast.show({ type: "error", text1: "Заповніть всі поля" });
-      return;
-    }
+    setImage(null)
+  }
+
+  const onRegister = (e) => {
+    e.preventDefault();
+
     const user = {
       login: login.trim(),
       email: email.trim(),
-      password: password.trim(),
-      avatar,
-    };
-    dispatch(authSignUpUser(user));
-    resetForm();
+      password,
+      image
+    }
+
+    dispatch(signUp(user))
+    resetForm()
   };
 
-  const handleKeyboard = () => {
-    Keyboard.dismiss();
-    setIsShowKeyboard(false);
-  };
   const handleInputShow = () => {
     setShowPassword(!showPassword);
   };
+
+  const handleKeyboard = () => {
+    Keyboard.dismiss()
+    setShowKeyboard(false)
+  }
+
+  useEffect(() => {
+    if (email && password && login) {
+      setDisabled(false);
+    }
+    if (!email || !password || !login) {
+      setDisabled(true);
+    }
+  }, [email, password, login]);
 
   return (
     <TouchableWithoutFeedback onPress={handleKeyboard}>
       <View style={styles.container}>
         <ImageBackground
-          source={require("../assets/bg.png")}
-          resizeMode="cover"
-          style={styles.image}
+          style={styles.bgImage}
+          source={require("../assets/images/bg.jpg")}
         >
-          <View style={styles.regFormWrapper}>
-            <View style={styles.addImage}>
-              {avatar ? (
-                <Image style={styles.avatar} source={{ uri: avatar }} />
-              ) : null}
-              <Pressable
-                style={styles.addImageBtn}
-                onPress={() => handleImage(setAvatar)}
-                accessibilityLabel={"Add avatar"}
-              >
-                {avatar ? (
-                  <View style={styles.removeImageBtnImage}>
-                    <Icon name="plus" size={25} color="#BDBDBD" />
-                  </View>
-                ) : (
-                  <View style={styles.addImageBtnImage}>
-                    <Icon name="plus" size={25} color="#FF6C00" />
-                  </View>
-                )}
-              </Pressable>
-            </View>
-            <Text style={styles.regFormTitle}>Реєстрація</Text>
-            <KeyboardAvoidingView
-              behavior={Platform.OS == "ios" ? "padding" : "height"}
+          <KeyboardAvoidingView
+            behavior={Platform.OS == "ios" && "padding"}
+          >
+            <View
+              style={{
+                ...styles.form,
+                paddingBottom: showKeyboard && Platform.OS == "android" ? 32 : 111,
+              }}
             >
-              <View
-                style={{
-                  ...styles.regFormInputWrapper,
-                  paddingBottom: isShowKeyboard ? 159 : 43,
-                }}
-              >
+              <View style={styles.addImage}>
+                {image ? <Image style={styles.avatar} source={{ uri: image }} /> : null}
+                <Pressable
+                  style={styles.addImageBtn}
+                  onPress={() => imageHandler(setImage)}
+                  accessibilityLabel={"Add avatar"}
+                >
+                  {image ?
+
+                    <View style={styles.removeImageBtnImage} >
+                      <Icon name='plus' size={25} color='#BDBDBD' />
+                    </View>
+
+                    : <View style={styles.addImageBtnImage} >
+                      <Icon name='plus' size={25} color='#FF6C00' />
+                    </View>
+                  }
+                </Pressable>
+              </View>
+              <Text style={styles.title}>Registration</Text>
+
+
+              <View style={styles.inputWrapper}>
                 <TextInput
-                  placeholder="Логін"
                   value={login}
-                  onChangeText={setLogin}
+                  returnKeyType="next"
+                  selectionColor='#FF6C00'
+                  onChangeText={loginHandler}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
+                    setShowKeyboard(true);
                     setFocused("login");
                   }}
                   onBlur={() => {
-                    setIsShowKeyboard(false);
+
                     setFocused("");
                   }}
+                  placeholder="Login"
                   style={{
-                    ...styles.regFormInput,
+                    ...styles.input,
                     borderColor: focused === "login" ? "#FF6C00" : "#E8E8E8",
                   }}
                 />
+              </View>
+              <View style={styles.inputWrapper}>
                 <TextInput
-                  placeholder="Адреса електронної пошти"
                   value={email}
-                  onChangeText={setEmail}
+                  returnKeyType="next"
+                  autoCompleteType="email"
+                  textContentType="emailAddress"
+                  keyboardType="email-address"
+                  autoCapitalize='none'
+                  selectionColor='#FF6C00'
+                  onChangeText={emailHandler}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
+                    setShowKeyboard(true);
                     setFocused("email");
                   }}
                   onBlur={() => {
-                    setIsShowKeyboard(false);
                     setFocused("");
                   }}
+                  placeholder="Email address"
                   style={{
-                    ...styles.regFormInput,
+                    ...styles.input,
                     borderColor: focused === "email" ? "#FF6C00" : "#E8E8E8",
                   }}
                 />
+              </View>
+              <View style={styles.inputWrapper}>
                 <TextInput
-                  placeholder="Пароль"
                   value={password}
-                  onChangeText={setPassword}
+                  returnKeyType="done"
+                  selectionColor='#FF6C00'
+                  onChangeText={passwordHandler}
                   onFocus={() => {
-                    setIsShowKeyboard(true);
+                    setShowKeyboard(true);
                     setFocused("password");
                   }}
                   onBlur={() => {
-                    setIsShowKeyboard(false);
+
                     setFocused("");
                   }}
-                  style={{
-                    ...styles.regFormInput,
-                    borderColor: focused === "password" ? "#FF6C00" : "#E8E8E8",
-                  }}
+                  placeholder="Password"
                   secureTextEntry={!showPassword}
+                  style={{
+                    ...styles.input,
+                    borderColor:
+                      focused === "password" ? "#FF6C00" : "#E8E8E8",
+                  }}
                 />
-                <Text
-                  style={styles.regShowPasswordBtn}
+                <Pressable
+                  style={styles.passwordIndicator}
                   onPress={handleInputShow}
+                  accessibilityLabel={"Show password"}
                 >
-                  {showPassword ? "Приховати" : "Показати"}
-                </Text>
+                  <Text
+                    style={{
+                      ...styles.passwordIndicatorText,
+                      opacity: !password ? 0.5 : 1,
+                    }}
+                  >
+                    Show
+                  </Text>
+                </Pressable>
               </View>
-            </KeyboardAvoidingView>
-            <TouchableOpacity style={styles.regBtn} onPress={onRegister}>
-              <Text style={styles.regBtnTitle}>Зареєстуватися</Text>
-            </TouchableOpacity>
-            <Text style={styles.regIsLogin}>
-              Вже є акаунт?{" "}
-              <Text
-                style={styles.loginReg}
-                onPress={() => navigation.navigate("Login")}
+
+              <Pressable
+                disabled={disabled}
+                style={{ ...styles.button, opacity: disabled ? 0.7 : 1 }}
+                onPress={onRegister}
+                accessibilityLabel={"Register"}
               >
-                Увійти
-              </Text>
-            </Text>
-          </View>
+                <Text style={styles.buttonText}>Register</Text>
+              </Pressable>
+
+              <View style={styles.navBlock}>
+                <Text
+                  style={styles.passwordIndicatorText
+                  }
+                >Already have an account?</Text>
+                <Pressable onPress={() => navigation.navigate("Login")}>
+                  <Text style={styles.passwordIndicatorText
+                  }>Log in</Text>
+                </Pressable>
+              </View>
+
+            </View>
+          </KeyboardAvoidingView>
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
+    backgroundColor: "#ecf0f1",
   },
-  regFormWrapper: {
-    width: "100%",
-    paddingBottom: 78,
-    backgroundColor: "#FFF",
-    borderRadius: 25,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+  input: {
+    height: 50,
+    padding: 16,
+    backgroundColor: "#F6F6F6",
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    borderRadius: 8,
+    marginBottom: 16,
   },
-  image: {
+  bgImage: {
     flex: 1,
     justifyContent: "flex-end",
   },
-  avatar: {
-    borderRadius: 16,
-    width: 120,
-    height: 120,
+  form: {
+    justifyContent: "flex-start",
+    backgroundColor: "#ffffff",
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    paddingTop: 32,
+    paddingHorizontal: 16,
+  },
+  inputWrapper: {
+    position: "relative",
+  },
+  passwordIndicator: {
+    position: "absolute",
+    right: 16,
+    top: 16,
+  },
+  passwordIndicatorText: {
+    fontFamily: "Roboto-Regular",
+    color: "#1B4371",
+    fontSize: 16,
+    fontWeight: 400,
+    textAlign: "right",
+  },
+  title: {
+    fontFamily: "Roboto-Medium",
+    fontSize: 30,
+    color: "#212121",
+    fontWeight: 500,
+    lineHeight: 35,
+    textAlign: "center",
+    letterSpacing: 0.01,
+    marginBottom: 32,
+  },
+  button: {
+    backgroundColor: "#FF6C00",
+    borderRadius: 100,
+    padding: 16,
+  },
+  buttonText: {
+    fontFamily: "Roboto-Regular",
+    textAlign: "center",
+    color: "#ffffff",
+    fontSize: 16,
+    lineHeight: 19,
   },
   addImage: {
-    position: "relative",
-    alignSelf: "center",
+    position: 'relative',
+    alignSelf: 'center',
     marginTop: -92,
     marginBottom: 32,
     backgroundColor: "#F6F6F6",
@@ -212,126 +307,43 @@ const styles = StyleSheet.create({
     height: 120,
   },
   addImageBtn: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 14,
     right: -12,
     borderRadius: 50,
   },
   addImageBtnImage: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 50,
     borderWidth: 1,
-    borderColor: "#FF6C00",
-    backgroundColor: "#ffffff",
+    borderColor: '#FF6C00',
+    backgroundColor: '#ffffff',
   },
   removeImageBtnImage: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 50,
     borderWidth: 1,
-    borderColor: "#BDBDBD",
-    backgroundColor: "#ffffff",
-    transform: [{ rotate: "45deg" }],
+    borderColor: '#BDBDBD',
+    backgroundColor: '#ffffff',
+    transform: [{ rotate: '45deg' }],
   },
-  // avatar: {
-  //   marginTop: -92,
-  //   alignSelf: "center",
-  //   width: 120,
-  //   height: 120,
-  //   backgroundColor: "#F6F6F6",
-  //   borderRadius: 16,
-  // },
-  // avatarBtn: {
-  //   width: 25,
-  //   height: 25,
-  //   alignSelf: "center",
-  //   marginTop: -39,
-  //   marginRight: -119.5,
-  // },
-  // addAvatar: {
-  //   backgroundColor: "#fff",
-  //   borderRadius: 25,
-  //   borderWidth: 1,
-  //   borderColor: "#FF6C00",
-  //   textAlign: "center",
-  //   alignItems: "center",
-  //   justifyContent: "center",
-  // },
-  // addAvatar: {
-  //   position: "relative",
-  //   marginLeft: "auto",
-  //   marginRight: "auto",
-  //   marginTop: -60,
-  //   marginBottom: 32,
-  //   width: 120,
-  //   height: 120,
-  //   backgroundColor: "#F6F6F6",
-  //   borderRadius: 16,
-  // },
-  // addAvatarBtn: {
-  //   position: "absolute",
-  //   bottom: 14,
-  //   right: -12,
-  //   width: 25,
-  //   height: 25,
-  //   justifyContent: "center",
-  //   alignItems: "center",
-  //   borderRadius: 50,
-  //   borderWidth: 1,
-  //   borderColor: "#FF6C00",
-  //   backgroundColor: "#FFF",
-  // },
-  regFormTitle: {
-    textAlign: "center",
-    fontFamily: "Roboto-Medium",
-    fontSize: 30,
+  avatar: {
+    borderRadius: 16,
+    width: 120,
+    height: 120,
   },
-  regFormInputWrapper: {
-    position: "relative",
-    gap: 16,
-    marginTop: 32,
-  },
-  regFormInput: {
-    height: 50,
-    marginHorizontal: 16,
-    paddingStart: 16,
-    backgroundColor: "#F6F6F6",
-    borderWidth: 1,
-    borderRadius: 8,
-    columnGap: 16,
-  },
-  regShowPasswordBtn: {
-    position: "absolute",
-    top: 148,
-    right: 32,
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    lineHeight: 19,
-    color: "#1B4371",
-  },
-  regBtn: {
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    // mrginTop: 43,a
-    marginHorizontal: 16,
-    backgroundColor: "#FF6C00",
-    borderRadius: 100,
-    borderColor: "black",
-  },
-  regBtnTitle: {
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    lineHeight: 19,
-    color: "#FFF",
-  },
-  regIsLogin: {
+  navBlock: {
     marginTop: 16,
-    textAlign: "center",
-    fontSize: 16,
-    color: "#1B4371",
-  },
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 4,
+    justifyContent: 'center'
+  }
 });
+
+
+export default Registration;
