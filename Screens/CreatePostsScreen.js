@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "../firebase/config";
+import { db } from "../firebase/config";
+import { collection, addDoc } from "firebase/firestore";
 
 import {
   StyleSheet,
@@ -37,6 +40,8 @@ export default function CreatePostsScreen({ navigation }) {
     longitude: "",
   });
   const [location, setLocation] = useState(null);
+
+  const { userId, login } = useSelector((state) => state.auth);
 
   const hideKeyboard = () => {
     Keyboard.dismiss();
@@ -76,6 +81,18 @@ export default function CreatePostsScreen({ navigation }) {
       });
     })();
   };
+  async function getAddress() {
+    try {
+      const address = await Location.reverseGeocodeAsync({
+        latitude: coords.coords.latitude,
+        longitude: coords.coords.longitude,
+      });
+      setLocation(`${address[0].city}, ${address[0].country}`);
+      setCountry(address[0].country);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const takePhoto = async () => {
     if (!isCameraReady) {
@@ -109,6 +126,25 @@ export default function CreatePostsScreen({ navigation }) {
         type: "error",
         text1: "Помилка при завантаженні фото",
       });
+    }
+  };
+
+  const uploadPost = async () => {
+    try {
+      const photo = await uploadPhotoToServer();
+      // console.log(photo);
+      await addDoc(collection(db, "posts"), {
+        userId,
+        login,
+        photo,
+        title,
+        location,
+        coordinates: coordinates.coords,
+        date: Date.now().toString(),
+        country,
+      });
+    } catch (error) {
+      console.log(error);
     }
   };
 

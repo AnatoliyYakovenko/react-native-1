@@ -1,5 +1,9 @@
 {
   "expo": {
+    "packagerOpts": {
+      "port": 19001
+    },
+    "jsEngine": "hermes",
     "name": "App1",
     "slug": "App1",
     "version": "1.0.0",
@@ -11,17 +15,17 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "jsEngine": "jsc"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "jsEngine": "jsc"
     },
     "web": {
       "favicon": "./assets/favicon.png"
